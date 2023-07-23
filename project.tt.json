@@ -1,0 +1,13 @@
+{
+  "miniprogramRoot": "./",
+  "projectname": "HanFish",
+  "description": "闲置物品交易平台",
+  "appid": "touristappid",
+  "setting": {
+    "urlCheck": true,
+    "es6": false,
+    "postcss": false,
+    "minified": false
+  },
+  "compileType": "miniprogram"
+}
