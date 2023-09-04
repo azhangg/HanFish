@@ -1,0 +1,19 @@
+.at-tabs__item--active {
+    color: $primary;
+  }
+  .at-tabs__item-underline,
+  .at-search-bar__action {
+    background-color: $primary;
+  }
+  .custom-avatar{
+    height: 65rpx !important;
+    width: 65rpx !important;
+    border-radius: 50%;
+  }
+  .ellipsis-1{
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    -webkit-line-clamp: 1;
+    text-overflow: ellipsis;
+  }

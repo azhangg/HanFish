@@ -5,32 +5,17 @@
   </view>
 </template>
 
-<script>
-import { useCounterStore } from '../stores/counter'
+<script setup>
+import { useCounterStore } from "../stores/counter";
 
-export default {
-  setup() {
-    const counter = useCounterStore()
+const counter = useCounterStore();
 
-    const onAdd = () => {
-      counter.count++
-
-      // with autocompletion ✨
-      // counter.$patch({count: counter.count + 1})
-
-      // or using an action instead
-      // counter.increment()
-    }
-
-    return {
-      counter,
-      onAdd
-    }
-  }
-}
+const onAdd = () => {
+  counter.count++;
+};
 </script>
 
-<style>
+<style lang="scss">
 .title {
   font-size: 32px;
 }

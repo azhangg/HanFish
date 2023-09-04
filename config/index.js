@@ -9,20 +9,43 @@ const config = {
     750: 1,
     828: 1.81 / 2,
   },
+  extensions: [".ts", ".scss", ".vue", "json"],
   alias: {
-    "@components": path.resolve(__dirname, "..", "src/components"),
-    "@utils": path.resolve(__dirname, "..", "src/utils"),
+    "@/components": path.resolve(__dirname, "..", "src/components"),
+    "@/enums": path.resolve(__dirname, "..", "src/enums"),
+    "@/pages": path.resolve(__dirname, "..", "src/pages"),
+    "@/assets": path.resolve(__dirname, "..", "src/assets"),
+    "@/models": path.resolve(__dirname, "..", "src/models"),
   },
   sourceRoot: "src",
   outputRoot: "dist",
   plugins: [],
   defineConstants: {},
   copy: {
-    patterns: [],
+    patterns: [
+      {
+        from: "src/assets/icon",
+        to: "dist/assets/icon",
+      },
+      {
+        from: "src/assets/images",
+        to: "dist/assets/images",
+      },
+    ],
     options: {},
   },
   framework: "vue3",
-  compiler: "webpack5",
+  compiler: {
+    type: "webpack5",
+    prebundle: {
+      enable: false,
+      force: true,
+    },
+  },
+  sass: {
+    resource: ["src/assets/css/var.scss", "src/app.scss"],
+    projectDirectory: path.resolve(__dirname, ".."),
+  },
   cache: {
     enable: true, // Webpack 持久化缓存配置，建议开启。默认配置请参考：https://docs.taro.zone/docs/config-detail#cache
   },
