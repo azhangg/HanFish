@@ -17,3 +17,10 @@
     -webkit-line-clamp: 1;
     text-overflow: ellipsis;
   }
+  .box-shadow{
+    box-shadow: $box-shadow;
+  }
+  .roundness{
+    border-radius: $border-radius;
+    overflow: hidden;
+  }

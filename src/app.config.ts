@@ -1,5 +1,5 @@
 export default {
-  entryPagePath: "pages/message/message",
+  entryPagePath: "pages/user/user",
   pages: [
     "pages/home/home",
     "pages/community/community",
@@ -38,7 +38,7 @@ export default {
       },
       {
         pagePath: "pages/user/user",
-        text: "我的",
+        text: "个人中心",
         iconPath: "./assets/icon/user.png",
         selectedIconPath: "./assets/icon/user-selected.png",
       },

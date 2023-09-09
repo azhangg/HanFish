@@ -4,7 +4,6 @@ import { AtSearchBar, AtLoadMore, AtTabs, AtTabsPane } from "taro-ui-vue3";
 import GoodCard from "@/components/home/GoodCard.vue";
 import { ref, onMounted } from "vue";
 import { LoadStatus } from "@/enums/index";
-import icon_add from "@/assets/icon/home_add.png";
 
 const imgUrls = [
   "https://img10.360buyimg.com/babel/s700x360_jfs/t25855/203/725883724/96703/5a598a0f/5b7a22e1Nfd6ba344.jpg!q90!cc_350x180",
@@ -220,7 +219,7 @@ onMounted(() => {});
     <movable-area>
       <movable-view direction="all" x="600rpx" y="1150rpx">
         <cover-view class="container">
-          <cover-image class="img" :src="icon_add" />
+          <cover-image class="img" src="@/assets/icon/home_add.png" />
         </cover-view>
       </movable-view>
     </movable-area>

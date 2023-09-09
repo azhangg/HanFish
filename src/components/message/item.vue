@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import a from "@/assets/images/OIP-C (20).jpg";
+import { AtBadge } from "taro-ui-vue3";
 </script>
 <template>
   <view class="message-item">
-    <image class="user-avatar" :src="a" />
+    <AtBadge :value="10" :maxValue="99">
+      <image class="user-avatar" :src="a" />
+    </AtBadge>
     <view class="message-item__content">
       <view class="message-box">
         <text class="user-name">张山里斯</text>
-        <text class="ellipsis-1">
+        <text class="ellipsis-1 message">
           打撒大厦大厦到拉萨拉拉肥很多凉粉案件路口放大了哈哈喽大厦里的哈利大厦积分哈佛和按计划案件客户啊空间哈看看卡
         </text>
-        <text>123</text>
+        <text class="time"> 2023/9/4 10:30 </text>
       </view>
       <image class="goods-image" :src="a" />
     </view>
@@ -38,7 +41,14 @@ $gap: 20rpx;
       .user-name {
         font-weight: bold;
       }
-      .ellipsis-1 {
+      .message {
+        font-size: 28rpx;
+      }
+      .time {
+        font-size: 24rpx;
+      }
+      .message,
+      .time {
         color: $text-secondary-color;
       }
     }
@@ -53,5 +63,9 @@ $gap: 20rpx;
     width: $image-size;
     border-radius: $border-radius;
   }
+}
+.at-badge__num {
+  top: -8rpx;
+  right: 4rpx;
 }
 </style>

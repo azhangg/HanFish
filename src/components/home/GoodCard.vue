@@ -30,7 +30,7 @@ const { imgUrl, tags, price, description, user } = props;
 .good-card {
   border-radius: $border-radius;
   overflow: hidden;
-  box-shadow: rgba(0, 0, 0, 0.25) 0px 25px 50px -12px;
+  box-shadow: $box-shadow;
   image {
     width: 100%;
   }
