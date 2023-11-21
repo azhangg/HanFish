@@ -28,9 +28,19 @@ const { imgUrl, tags, price, description, user } = props;
 
 <style lang="scss">
 .good-card {
-  border-radius: $border-radius;
+  border-radius: 20rpx;
   overflow: hidden;
   box-shadow: $box-shadow;
+  &:nth-child(2n + 1) {
+    width: calc(50% - 20rpx);
+    float: left;
+    margin: 15rpx 20rpx 15rpx 0;
+  }
+  &:nth-child(2n) {
+    width: calc(50% - 20rpx);
+    float: right;
+    margin: 15rpx 20rpx 15rpx 0;
+  }
   image {
     width: 100%;
   }

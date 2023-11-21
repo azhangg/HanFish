@@ -46,7 +46,7 @@ const goodsInfo: GoodCardProps[] = [
     tags: ["99新", "55新", "daa", "dajda"],
     user: {
       id: 1,
-      name: "尼古拉斯·赵四",
+      name: "尼古拉斯·赵四wuliuqiba",
       avatarUrl: "../../assets/images/OIP-C.jpg",
     },
   },
@@ -59,7 +59,7 @@ const goodsInfo: GoodCardProps[] = [
     tags: ["99新"],
     user: {
       id: 1,
-      name: "尼古拉斯·赵四",
+      name: "尼古拉斯·赵四wuliuqiba",
       avatarUrl: "../../assets/images/OIP-C.jpg",
     },
   },
@@ -240,10 +240,7 @@ onMounted(() => {});
   }
   .goods-view {
     padding: 20rpx;
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, 46%);
-    grid-gap: 20rpx;
+    width: 97%;
   }
   .at-load-more {
     height: 100rpx;

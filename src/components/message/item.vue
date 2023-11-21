@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import a from "@/assets/images/OIP-C (20).jpg";
 import { AtBadge } from "taro-ui-vue3";
 </script>
 <template>
   <view class="message-item">
     <AtBadge :value="10" :maxValue="99">
-      <image class="user-avatar" :src="a" />
+      <image class="user-avatar" :src="'touxiang'" />
     </AtBadge>
     <view class="message-item__content">
       <view class="message-box">
@@ -15,7 +14,7 @@ import { AtBadge } from "taro-ui-vue3";
         </text>
         <text class="time"> 2023/9/4 10:30 </text>
       </view>
-      <image class="goods-image" :src="a" />
+      <image class="goods-image" :src="'tupian'" />
     </view>
   </view>
 </template>

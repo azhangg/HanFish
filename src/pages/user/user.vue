@@ -1,17 +1,101 @@
 <script setup lang="ts">
-import { AtAvatar, AtList, AtListItem, AtGrid } from "taro-ui-vue3";
-</script>
+import { AtList, AtListItem, AtGrid } from "taro-ui-vue3";
+import { onMounted } from "vue";
+import { BASE_URL } from "@/utils/config";
+import { useStore } from "@/stores";
+import Taro from "@tarojs/taro";
+import { storeToRefs } from "pinia";
+import { getOpenidReq, loginReq } from "@/apis/account";
 
+const { userInfo, getUserInfo } = storeToRefs(useStore());
+
+const getAccessToken = (openid: string) => {
+  loginReq({ userName: openid, password: openid }, (res) => {
+    const { isSuccess, data } = res.data;
+    if (isSuccess) {
+      Taro.setStorage({
+        key: "token",
+        data: data.accessToken,
+      });
+      useStore().setAccessToken(data.accessToken);
+      getUserInfo.value = true;
+      Taro.hideLoading();
+    }
+  });
+};
+
+const accountClickHandler = async () => {
+  if (!getUserInfo.value) {
+    await Taro.getUserProfile({
+      desc: "用于展示用户信息",
+      success: (res) => {
+        Taro.showLoading({
+          title: "加载中",
+        });
+        setTimeout(function () {
+          Taro.hideLoading();
+        }, 10000);
+        const { nickName, avatarUrl } = res.userInfo;
+        userInfo.value.name = nickName;
+        userInfo.value.avatarUrl = avatarUrl;
+      },
+    });
+
+    var openid = Taro.getStorageSync("openid");
+
+    if (openid) getAccessToken(openid);
+    else if (!openid)
+      Taro.login({
+        success: function (res) {
+          if (res.code) {
+            const { name, avatarUrl } = userInfo.value;
+            getOpenidReq(
+              { jsCode: res.code, userName: name, avatarUrl: avatarUrl },
+              (res: any) => {
+                const { data, isSuccess, message } = res.data;
+                if (isSuccess) {
+                  Taro.setStorage({
+                    key: "openid",
+                    data: data.openId,
+                  });
+                  getAccessToken(data.openId);
+                  getUserInfo.value = true;
+                  Taro.hideLoading();
+                } else
+                  Taro.showToast({
+                    title: message,
+                    icon: "none",
+                  });
+              }
+            );
+          }
+        },
+      });
+  }
+};
+
+onMounted(() => {});
+</script>
 <template>
   <view class="user">
-    <image class="background" src="@/assets/images/splash-1763305_1280.png" />
+    <image
+      class="background"
+      :src="`${BASE_URL}/Files/SystemResource/20231120/20231120141152_3BA3C2DA-504D-43CE-BC8E-FE0766E0C175.png`"
+    />
     <view class="container">
-      <view class="user-info">
-        <AtAvatar
-          circle
-          image="../../assets/images/relaxation-3715942_1280.jpg"
+      <view class="user-info flex">
+        <image
+          class="avatar"
+          :src="
+            getUserInfo && userInfo.avatarUrl
+              ? userInfo.avatarUrl
+              : `${BASE_URL}/Files/SystemResource/20231120/20231120164727_5047E569-0F1E-4564-AB7F-7AB4B4F537D0.jpg`
+          "
+          @tap="accountClickHandler"
         />
-        <text>二狗TSDsinger</text>
+        <text @tap="accountClickHandler">
+          {{ getUserInfo && userInfo.name ? userInfo.name : "未登录" }}
+        </text>
       </view>
       <view class="user-order box-shadow roundness">
         <AtList :hasBorder="false">
@@ -84,19 +168,21 @@ $top: 175rpx;
     flex-direction: column;
     gap: 30rpx;
     .user-info {
-      display: flex;
       gap: 20rpx;
       align-items: center;
       font-weight: bold;
       font-size: 35rpx;
+      .avatar {
+        border-radius: 50%;
+        height: 100px;
+        width: 100px;
+      }
     }
     .user-order {
       margin-top: 35rpx;
       .at-list__item .item-content__info-title {
         font-weight: bold;
       }
-    }
-    .other {
     }
   }
 }

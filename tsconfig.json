@@ -31,11 +31,7 @@
       "types"
     ],
     "paths": {
-      "@/components/*": ["./src/components/*"],
-      "@/enums/*": ["./src/enums/*"],
-      "@/pages/*": ["src/pages/*"],
-      "@/assets/*": ["src/assets/*"],
-      "@/models/*": ["src/models/*"],
+      "@/*": ["./src/*"],
     },
   },
   "include": [

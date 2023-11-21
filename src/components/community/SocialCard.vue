@@ -16,7 +16,7 @@ const { text, imageUrl, comments, user, likes } = props;
       </view>
     </view>
     <view>&emsp;</view>
-    <view class="content">
+    <view class="content box-shadow roundness">
       <view class="content-text">{{ text }}</view>
       <view class="content-wrapper" v-if="imageUrl">
         <image class="content-wrapper__image" :src="imageUrl" />
@@ -64,6 +64,7 @@ const { text, imageUrl, comments, user, likes } = props;
     }
   }
   .content {
+    padding: 0 10rpx;
     &-text {
       margin: 20rpx 10rpx;
       display: -webkit-box;

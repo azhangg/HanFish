@@ -1,4 +1,5 @@
 import path from "path";
+import UnoCSS from "unocss/webpack";
 
 const config = {
   projectName: "HanFish",
@@ -11,29 +12,12 @@ const config = {
   },
   extensions: [".ts", ".scss", ".vue", "json"],
   alias: {
-    "@/components": path.resolve(__dirname, "..", "src/components"),
-    "@/enums": path.resolve(__dirname, "..", "src/enums"),
-    "@/pages": path.resolve(__dirname, "..", "src/pages"),
-    "@/assets": path.resolve(__dirname, "..", "src/assets"),
-    "@/models": path.resolve(__dirname, "..", "src/models"),
+    "@": path.resolve(__dirname, "..", "src"),
   },
   sourceRoot: "src",
   outputRoot: "dist",
   plugins: [],
   defineConstants: {},
-  copy: {
-    patterns: [
-      {
-        from: "src/assets/icon",
-        to: "dist/assets/icon",
-      },
-      {
-        from: "src/assets/images",
-        to: "dist/assets/images",
-      },
-    ],
-    options: {},
-  },
   framework: "vue3",
   compiler: {
     type: "webpack5",
@@ -66,6 +50,7 @@ const config = {
           },
         },
       });
+      chain.plugin("unocss").use(UnoCSS());
     },
     postcss: {
       pxtransform: {
@@ -86,6 +71,7 @@ const config = {
         },
       },
     },
+    optimizeMainPackage: { enable: true },
   },
   h5: {
     publicPath: "/",
@@ -102,6 +88,9 @@ const config = {
           generateScopedName: "[name]__[local]___[hash:base64:5]",
         },
       },
+    },
+    webpackChain(chain) {
+      chain.plugin("unocss").use(UnoCSS());
     },
   },
 };

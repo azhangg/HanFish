@@ -1,10 +1,16 @@
 export default {
-  entryPagePath: "pages/user/user",
+  entryPagePath: "pages/home/home",
   pages: [
     "pages/home/home",
     "pages/community/community",
     "pages/message/message",
     "pages/user/user",
+  ],
+  subpackages: [
+    // {
+    //   root: "package",
+    //   pages: ["account/login/login", "account/register"],
+    // },
   ],
   window: {
     backgroundTextStyle: "light",

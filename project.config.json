@@ -1,8 +1,6 @@
 {
   "miniprogramRoot": "dist/",
-  "projectname": "HanFish",
   "description": "闲置物品交易平台",
-  "appid": "wx5c5d7fe470884e58",
   "setting": {
     "urlCheck": true,
     "es6": true,
@@ -14,18 +12,23 @@
       "ignore": [],
       "disablePlugins": [],
       "outputPath": ""
-    }
+    },
+    "coverView": false,
+    "showShadowRootInWxmlPanel": false,
+    "packNpmRelationList": [],
+    "ignoreUploadUnusedFiles": true
   },
   "compileType": "miniprogram",
-  "libVersion": "2.27.1",
   "srcMiniprogramRoot": "dist/",
-  "packOptions": {
-    "ignore": [],
-    "include": []
-  },
   "condition": {},
   "editorSetting": {
     "tabIndent": "insertSpaces",
     "tabSize": 2
-  }
+  },
+  "libVersion": "2.19.6",
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "appid": "wx5c5d7fe470884e58"
 }
