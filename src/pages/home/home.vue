@@ -1,9 +1,31 @@
 <script lang="ts">
-import type GoodCardProps from "@/components/home/GoodCard";
-import { AtSearchBar, AtLoadMore, AtTabs, AtTabsPane } from "taro-ui-vue3";
+import type { GoodType } from "@/models/good/good";
+import { AtSearchBar, AtLoadMore } from "taro-ui-vue3";
 import GoodCard from "@/components/home/GoodCard.vue";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, reactive, computed, watch } from "vue";
 import { LoadStatus } from "@/enums/index";
+import { useAccount } from "@/hooks/useAccount";
+import Taro from "@tarojs/taro";
+import { getGoodsReq } from "@/apis/good";
+import { getGoodCategoriesReq } from "@/apis/goodCategory";
+import { msg } from "@/utils/common";
+import { BASE_URL } from "@/utils/config";
+
+const { getAccessToken, requestUserInfo } = useAccount();
+
+const pagination = reactive<{
+  page: number;
+  count: number;
+  search: string;
+  categoryId: number;
+  total: number;
+}>({
+  page: 1,
+  count: 10,
+  search: "",
+  categoryId: 0,
+  total: 0,
+});
 
 const imgUrls = [
   "https://img10.360buyimg.com/babel/s700x360_jfs/t25855/203/725883724/96703/5a598a0f/5b7a22e1Nfd6ba344.jpg!q90!cc_350x180",
@@ -13,142 +35,114 @@ const imgUrls = [
 
 const swiperDuration = 500;
 const swiperInterval = 2000;
-const tabList = [
-  { title: "全部分类" },
-  { title: "标签页2" },
-  { title: "标签页3" },
-  { title: "标签页4" },
-  { title: "标签页5" },
-  { title: "标签页6" },
-  { title: "标签页7" },
-];
 
-const goodsInfo: GoodCardProps[] = [
-  {
-    id: 0,
-    imgUrl: "../../assets/images/OIP-b.jpg",
-    description:
-      "大大代码块雷锋精神独立来快速减肥上了控股了NSF发货说几句废话是南非士大夫你说的开发商的返回的是和安拉胡多久啊是",
-    price: 200,
-    tags: ["99新"],
-    user: {
-      id: 1,
-      name: "尼古拉斯·赵四",
-      avatarUrl: "../../assets/images/OIP-C.jpg",
-    },
-  },
-  {
-    id: 1,
-    imgUrl: "../../assets/images/OIP-C (1).jpg",
-    description:
-      "大大代码块雷锋精神独立来快速减肥上了控股了NSF发货说几句废话是南非士大夫你说的开发商的返回的是和安拉胡多久啊是",
-    price: 200,
-    tags: ["99新", "55新", "daa", "dajda"],
-    user: {
-      id: 1,
-      name: "尼古拉斯·赵四wuliuqiba",
-      avatarUrl: "../../assets/images/OIP-C.jpg",
-    },
-  },
-  {
-    id: 2,
-    imgUrl: "../../assets/images/OIP-b.jpg",
-    description:
-      "大大代码块雷锋精神独立来快速减肥上了控股了NSF发货说几句废话是南非士大夫你说的开发商的返回的是和安拉胡多久啊是",
-    price: 200,
-    tags: ["99新"],
-    user: {
-      id: 1,
-      name: "尼古拉斯·赵四wuliuqiba",
-      avatarUrl: "../../assets/images/OIP-C.jpg",
-    },
-  },
-  {
-    id: 3,
-    imgUrl: "../../assets/images/OIP-b.jpg",
-    description:
-      "大大代码块雷锋精神独立来快速减肥上了控股了NSF发货说几句废话是南非士大夫你说的开发商的返回的是和安拉胡多久啊是",
-    price: 200,
-    tags: ["99新"],
-    user: {
-      id: 1,
-      name: "尼古拉斯·赵四",
-      avatarUrl: "../../assets/images/OIP-C.jpg",
-    },
-  },
-  {
-    id: 4,
-    imgUrl: "../../assets/images/OIP-b.jpg",
-    description:
-      "大大代码块雷锋精神独立来快速减肥上了控股了NSF发货说几句废话是南非士大夫你说的开发商的返回的是和安拉胡多久啊是",
-    price: 200,
-    tags: ["99新"],
-    user: {
-      id: 1,
-      name: "尼古拉斯·赵四",
-      avatarUrl: "../../assets/images/OIP-C.jpg",
-    },
-  },
-  {
-    id: 5,
-    imgUrl: "../../assets/images/OIP-b.jpg",
-    description:
-      "大大代码块雷锋精神独立来快速减肥上了控股了NSF发货说几句废话是南非士大夫你说的开发商的返回的是和安拉胡多久啊是",
-    price: 200,
-    tags: ["99新"],
-    user: {
-      id: 1,
-      name: "尼古拉斯·赵四",
-      avatarUrl: "../../assets/images/OIP-C.jpg",
-    },
-  },
-  {
-    id: 6,
-    imgUrl: "../../assets/images/OIP-b.jpg",
-    description:
-      "大大代码块雷锋精神独立来快速减肥上了控股了NSF发货说几句废话是南非士大夫你说的开发商的返回的是和安拉胡多久啊是",
-    price: 200,
-    tags: ["99新"],
-    user: {
-      id: 1,
-      name: "尼古拉斯·赵四",
-      avatarUrl: "../../assets/images/OIP-C.jpg",
-    },
-  },
-];
+const goodList = ref<GoodType[]>([]);
+
+const goodCategories = ref<{ id: number; name: string }[]>([]);
 </script>
 
 <script setup lang="ts">
-let searchText = ref("");
 let loadStatus = ref<string>(LoadStatus.more);
 
-const tabCurrent = ref(0);
+const goodListLeft = computed(() =>
+  goodList.value.filter((_, i) => i % 2 === 0)
+);
 
-const onActionClick = () => {
-  console.log(searchText.value);
+const goodListRight = computed(() =>
+  goodList.value.filter((_, i) => i % 2 !== 0)
+);
+
+watch(
+  () => pagination.categoryId,
+  () => {
+    goodList.value = [];
+    loadStatus.value = LoadStatus.loading;
+    getGoodList();
+  }
+);
+
+Taro.usePullDownRefresh(() => {
+  pagination.search = "";
+  getGoodList();
+  setTimeout(() => {
+    Taro.stopPullDownRefresh();
+  }, 1000);
+});
+
+const onSearchClick = () => {
+  goodList.value = [];
+  loadStatus.value = LoadStatus.loading;
+  getGoodList();
 };
 
 const onSearchClear = () => {
-  searchText.value = " ";
+  pagination.search = "";
 };
 
 const handleLoadClick = () => {
-  loadStatus.value = LoadStatus.loading;
+  const isload = pagination.count < pagination.total;
+  loadStatus.value = isload ? LoadStatus.loading : LoadStatus.noMore;
+  if (isload) {
+    pagination.count += 10;
+    loadStatus.value = LoadStatus.loading;
+    getGoodList();
+  }
 };
 
-const handleTabClick = (value) => {
-  tabCurrent.value = value;
+const onGoodCardTap = () => {
+  console.log(123);
 };
 
-onMounted(() => {});
+const onAddBtnTap = () => {
+  Taro.navigateTo({
+    url: "/package/goods/add/add",
+  });
+};
+
+const getGoodList = () => {
+  getGoodsReq(pagination, (res) => {
+    const { isSuccess, data, message } = res.data;
+    if (isSuccess) {
+      goodList.value = data.data;
+      pagination.total = data.total;
+      setTimeout(() => {
+        Taro.hideLoading();
+      }, 500);
+    } else {
+      msg(message);
+    }
+    loadStatus.value = LoadStatus.more;
+  });
+};
+
+const getGoodCategories = () => {
+  getGoodCategoriesReq((res) => {
+    const { isSuccess, data, message } = res.data;
+    if (isSuccess) {
+      goodCategories.value = data;
+      goodCategories.value.unshift({ id: 0, name: "全部" });
+    } else {
+      msg(message);
+    }
+  });
+};
+
+onMounted(() => {
+  getAccessToken();
+  getGoodList();
+  getGoodCategories();
+  setTimeout(() => {
+    requestUserInfo();
+  }, 2000);
+});
 </script>
 
 <template>
   <view class="home">
     <AtSearchBar
-      v-model:value="searchText"
+      v-model:value="pagination.search"
       @clear="onSearchClear"
-      @action-click="onActionClick"
+      @action-click="onSearchClick"
     />
     <swiper
       class="swiper"
@@ -165,62 +159,55 @@ onMounted(() => {});
         <image :src="item" class="slide-image" />
       </swiper-item>
     </swiper>
-    <AtTabs
-      :current="tabCurrent"
-      scroll
-      :tabList="tabList"
-      @click="handleTabClick"
+    <nut-tabs
+      v-model="pagination.categoryId"
+      title-scroll
+      :title-gutter="goodCategories.length"
+      name="tabName"
     >
-      <AtTabsPane :current="tabCurrent" :index="0">
+      <nut-tab-pane
+        v-for="(category, index) in goodCategories"
+        :title="category.name"
+        :pane-key="index"
+      >
         <view class="goods-view">
-          <GoodCard
-            v-for="good in goodsInfo"
-            :ref="'goodCard' + good.id"
-            :id="good.id"
-            :img-url="good.imgUrl"
-            :description="good.description"
-            :price="good.price"
-            :tags="good.tags"
-            :user="good.user"
-          />
+          <view class="goods-view__left">
+            <GoodCard
+              v-for="good in goodListLeft"
+              :id="good.id"
+              :img-url="`${BASE_URL}/${good.imgUrls[0]}`"
+              :description="good.description"
+              :price="good.price"
+              :tags="good.tags"
+              :user="good.user"
+              @tap="onGoodCardTap"
+            />
+          </view>
+          <view class="goods-view__right">
+            <GoodCard
+              v-for="good in goodListRight"
+              :id="good.id"
+              :img-url="`${BASE_URL}/${good.imgUrls[0]}`"
+              :description="good.description"
+              :price="good.price"
+              :tags="good.tags"
+              :user="good.user"
+              @tap="onGoodCardTap"
+            />
+          </view>
         </view>
-      </AtTabsPane>
-      <AtTabsPane :current="tabCurrent" :index="1">
-        <view style="font-size: 18px; text-align: center; height: 100px"
-          >标签页二的内容</view
-        >
-      </AtTabsPane>
-      <AtTabsPane :current="tabCurrent" :index="2">
-        <view style="font-size: 18px; text-align: center; height: 100px"
-          >标签页三的内容</view
-        >
-      </AtTabsPane>
-      <AtTabsPane :current="tabCurrent" :index="3">
-        <view style="font-size: 18px; text-align: center; height: 100px"
-          >标签页四的内容</view
-        >
-      </AtTabsPane>
-      <AtTabsPane :current="tabCurrent" :index="4">
-        <view style="font-size: 18px; text-align: center; height: 100px"
-          >标签页五的内容</view
-        >
-      </AtTabsPane>
-      <AtTabsPane :current="tabCurrent" :index="5">
-        <view style="font-size: 18px; text-align: center; height: 100px"
-          >标签页六的内容</view
-        >
-      </AtTabsPane>
-    </AtTabs>
+      </nut-tab-pane>
+    </nut-tabs>
     <AtLoadMore
       :moreBtnStyle="'color:#999;border:none;'"
       @click="handleLoadClick"
       :status="loadStatus"
     />
     <movable-area>
-      <movable-view direction="all" x="600rpx" y="1150rpx">
-        <cover-view class="container">
-          <cover-image class="img" src="@/assets/icon/home_add.png" />
-        </cover-view>
+      <movable-view direction="all" x="600rpx" y="1150rpx" @tap="onAddBtnTap">
+        <view class="container">
+          <image class="img" src="@/assets/icon/home_add.png" />
+        </view>
       </movable-view>
     </movable-area>
   </view>
@@ -240,7 +227,15 @@ onMounted(() => {});
   }
   .goods-view {
     padding: 20rpx;
-    width: 97%;
+    display: flex;
+    gap: 20rpx;
+    justify-content: space-between;
+    &__left {
+      width: 50%;
+    }
+    &__right {
+      width: 50%;
+    }
   }
   .at-load-more {
     height: 100rpx;
@@ -269,7 +264,7 @@ movable-area {
       height: 100rpx;
       width: 100rpx;
       border-radius: 50%;
-      background-color: $primary-bold;
+      background-color: $primary;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -282,5 +277,24 @@ movable-area {
       }
     }
   }
+}
+
+.nut-tab-pane {
+  padding: 0;
+}
+
+.nut-tabs__titles .nut-tabs__list {
+  overflow-x: auto;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.nut-tabs__titles-item.active {
+  color: $text-color;
+}
+
+.nut-tabs__titles-item.active .nut-tabs__titles-item__line {
+  background: $primary;
 }
 </style>

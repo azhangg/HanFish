@@ -1,0 +1,33 @@
+import { loginReq, getUserInfoReq } from "@/apis/account";
+import Taro from "@tarojs/taro";
+import { useStore } from "@/stores";
+
+const getOpenId = () => Taro.getStorageSync("openid");
+
+const getAccessToken = () => {
+  var openid = getOpenId();
+  if (openid) {
+    loginReq({ userName: openid, password: openid }, (res) => {
+      const { isSuccess, data } = res.data;
+      if (isSuccess) {
+        Taro.setStorage({
+          key: "token",
+          data: data.accessToken,
+        });
+        useStore().setAccessToken(data.accessToken);
+        useStore().setLogin();
+      }
+    });
+  }
+};
+
+const requestUserInfo = () => {
+  getUserInfoReq((res) => {
+    const { id, name, avatarUrl } = res.data.data;
+    useStore().setUserInfo({ id, name, avatarUrl });
+  });
+};
+
+export const useAccount = () => {
+  return { getAccessToken, requestUserInfo, getOpenId };
+};

@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import Taro from "@tarojs/taro";
 
 export const useStore = defineStore("store", {
   state: () => {

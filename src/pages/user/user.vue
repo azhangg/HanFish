@@ -5,71 +5,21 @@ import { BASE_URL } from "@/utils/config";
 import { useStore } from "@/stores";
 import Taro from "@tarojs/taro";
 import { storeToRefs } from "pinia";
-import { getOpenidReq, loginReq } from "@/apis/account";
+import { useAccount } from "@/hooks/useAccount";
 
 const { userInfo, getUserInfo } = storeToRefs(useStore());
+const { getOpenId, getAccessToken, requestUserInfo } = useAccount();
 
-const getAccessToken = (openid: string) => {
-  loginReq({ userName: openid, password: openid }, (res) => {
-    const { isSuccess, data } = res.data;
-    if (isSuccess) {
-      Taro.setStorage({
-        key: "token",
-        data: data.accessToken,
-      });
-      useStore().setAccessToken(data.accessToken);
-      getUserInfo.value = true;
-      Taro.hideLoading();
-    }
-  });
-};
-
-const accountClickHandler = async () => {
+const accountClickHandler = () => {
   if (!getUserInfo.value) {
-    await Taro.getUserProfile({
-      desc: "用于展示用户信息",
-      success: (res) => {
-        Taro.showLoading({
-          title: "加载中",
-        });
-        setTimeout(function () {
-          Taro.hideLoading();
-        }, 10000);
-        const { nickName, avatarUrl } = res.userInfo;
-        userInfo.value.name = nickName;
-        userInfo.value.avatarUrl = avatarUrl;
-      },
-    });
-
-    var openid = Taro.getStorageSync("openid");
-
-    if (openid) getAccessToken(openid);
-    else if (!openid)
-      Taro.login({
-        success: function (res) {
-          if (res.code) {
-            const { name, avatarUrl } = userInfo.value;
-            getOpenidReq(
-              { jsCode: res.code, userName: name, avatarUrl: avatarUrl },
-              (res: any) => {
-                const { data, isSuccess, message } = res.data;
-                if (isSuccess) {
-                  Taro.setStorage({
-                    key: "openid",
-                    data: data.openId,
-                  });
-                  getAccessToken(data.openId);
-                  getUserInfo.value = true;
-                  Taro.hideLoading();
-                } else
-                  Taro.showToast({
-                    title: message,
-                    icon: "none",
-                  });
-              }
-            );
-          }
-        },
+    if (getOpenId()) {
+      getAccessToken();
+      setTimeout(() => {
+        requestUserInfo();
+      }, 1000);
+    } else
+      Taro.redirectTo({
+        url: "/package/login/login",
       });
   }
 };
@@ -88,7 +38,7 @@ onMounted(() => {});
           class="avatar"
           :src="
             getUserInfo && userInfo.avatarUrl
-              ? userInfo.avatarUrl
+              ? `${BASE_URL}/${userInfo.avatarUrl}`
               : `${BASE_URL}/Files/SystemResource/20231120/20231120164727_5047E569-0F1E-4564-AB7F-7AB4B4F537D0.jpg`
           "
           @tap="accountClickHandler"

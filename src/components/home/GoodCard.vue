@@ -1,14 +1,16 @@
 <script lang="ts" setup>
 import type GoodCardProps from "@/components/home/GoodCard.d.ts";
 import { AtTag } from "taro-ui-vue3";
+import { BASE_URL } from "@/utils/config";
+import { toRefs } from "vue";
 
 const props = defineProps<GoodCardProps>();
 
-const { imgUrl, tags, price, description, user } = props;
+const { imgUrl, tags, price, description, user } = toRefs(props);
 </script>
 <template>
   <view class="good-card">
-    <image :src="imgUrl" />
+    <image :src="imgUrl" :lazy-load="true" />
     <view class="good-card-description">
       {{ description }}
     </view>
@@ -19,7 +21,7 @@ const { imgUrl, tags, price, description, user } = props;
         {{ price }}
       </view>
       <view class="good-card-info-user">
-        <image class="custom-avatar" :src="user.avatarUrl ?? ''" />
+        <image class="custom-avatar" :src="`${BASE_URL}/${user.avatarUrl}`" />
         <text class="user-name">{{ user.name }}</text>
       </view>
     </view>
@@ -31,16 +33,7 @@ const { imgUrl, tags, price, description, user } = props;
   border-radius: 20rpx;
   overflow: hidden;
   box-shadow: $box-shadow;
-  &:nth-child(2n + 1) {
-    width: calc(50% - 20rpx);
-    float: left;
-    margin: 15rpx 20rpx 15rpx 0;
-  }
-  &:nth-child(2n) {
-    width: calc(50% - 20rpx);
-    float: right;
-    margin: 15rpx 20rpx 15rpx 0;
-  }
+  margin-bottom: 30rpx;
   image {
     width: 100%;
   }

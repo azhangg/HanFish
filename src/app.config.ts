@@ -7,10 +7,10 @@ export default {
     "pages/user/user",
   ],
   subpackages: [
-    // {
-    //   root: "package",
-    //   pages: ["account/login/login", "account/register"],
-    // },
+    {
+      root: "package",
+      pages: ["login/login", "goods/add/add", "goods/detail/detail"],
+    },
   ],
   window: {
     backgroundTextStyle: "light",

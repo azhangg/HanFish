@@ -11,4 +11,4 @@ export const loginReq = (
 ) => httpGet("/Account/ClientLogin", data, callBack);
 
 export const getUserInfoReq = (callBack: (res) => void) =>
-  httpGet("/Account/ClientLogin", {}, callBack);
+  httpGet("/User/GetUserInfo", {}, callBack);

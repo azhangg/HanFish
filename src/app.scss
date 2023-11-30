@@ -24,3 +24,10 @@
     border-radius: $border-radius;
     overflow: hidden;
   }
+  .nut-button--plain.nut-button--primary {
+    color: $primary !important;
+    border-color: $primary !important;
+  }
+  .nut-button--primary{
+    --nut-button-primary-background-color: #ff6b81 !important
+  }

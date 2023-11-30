@@ -1,3 +1,11 @@
+import Taro from "@tarojs/taro";
+
+export const msg = (msg: string) =>
+  Taro.showToast({
+    title: msg,
+    icon: "none",
+  });
+
 export const clearObject = (raw: object, config?: { numberTo?: any }) => {
   const ignoreKeys = ["isTrusted", "_vts", "pointerId"];
   for (const key in raw) {
