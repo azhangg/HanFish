@@ -1,5 +1,5 @@
 export default {
-  entryPagePath: "pages/home/home",
+  entryPagePath: "pages/community/community",
   pages: [
     "pages/home/home",
     "pages/community/community",

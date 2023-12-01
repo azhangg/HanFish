@@ -1,5 +1,12 @@
 import Taro from "@tarojs/taro";
 
+export const loading = () => {
+  Taro.showLoading({ title: "加载中" });
+  setTimeout(() => {
+    Taro.hideLoading();
+  }, 10000);
+};
+
 export const msg = (msg: string) =>
   Taro.showToast({
     title: msg,

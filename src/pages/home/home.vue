@@ -89,8 +89,10 @@ const handleLoadClick = () => {
   }
 };
 
-const onGoodCardTap = () => {
-  console.log(123);
+const onGoodCardTap = (id: number) => {
+  Taro.navigateTo({
+    url: `/package/goods/detail/detail?id=${id}`,
+  });
 };
 
 const onAddBtnTap = () => {
@@ -180,7 +182,7 @@ onMounted(() => {
               :price="good.price"
               :tags="good.tags"
               :user="good.user"
-              @tap="onGoodCardTap"
+              @tap="onGoodCardTap(good.id)"
             />
           </view>
           <view class="goods-view__right">
@@ -192,7 +194,7 @@ onMounted(() => {
               :price="good.price"
               :tags="good.tags"
               :user="good.user"
-              @tap="onGoodCardTap"
+              @tap="onGoodCardTap(good.id)"
             />
           </view>
         </view>

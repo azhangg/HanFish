@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { AtList, AtListItem, AtGrid } from "taro-ui-vue3";
 import { onMounted } from "vue";
-import { BASE_URL } from "@/utils/config";
+import { BASE_URL, DEFAULT_AVATAR } from "@/utils/config";
 import { useStore } from "@/stores";
 import Taro from "@tarojs/taro";
 import { storeToRefs } from "pinia";
@@ -39,7 +39,7 @@ onMounted(() => {});
           :src="
             getUserInfo && userInfo.avatarUrl
               ? `${BASE_URL}/${userInfo.avatarUrl}`
-              : `${BASE_URL}/Files/SystemResource/20231120/20231120164727_5047E569-0F1E-4564-AB7F-7AB4B4F537D0.jpg`
+              : `${BASE_URL}/${DEFAULT_AVATAR}`
           "
           @tap="accountClickHandler"
         />

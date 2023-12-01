@@ -5,6 +5,8 @@ import { storeToRefs } from "pinia";
 
 const { accessToken } = storeToRefs(useStore());
 
+export type customRequestCallBack = (res: any) => void;
+
 export const BasicRequest = (
   method: "POST" | "GET" | "DELETE",
   url: string,

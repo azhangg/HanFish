@@ -1,9 +1,13 @@
+import type { customRequestCallBack } from "@/utils/request";
 import { httpGet, httpPost } from "@/utils/request";
 
 export const getGoodsReq = (
   data: { page: number; count: number; search: string; categoryId: number },
-  callBack: (res) => void
+  callBack: customRequestCallBack
 ) => httpGet("/Good/GetGoodToPagination", data, callBack);
+
+export const getGoodByIdReq = (id: number, callBack: customRequestCallBack) =>
+  httpGet("/Good/GetGoodById", { id }, callBack);
 
 export const addGoodReq = (
   data: {
@@ -14,7 +18,7 @@ export const addGoodReq = (
     categoryId: number;
     userId: 0;
   },
-  callBack: (res) => void
+  callBack: customRequestCallBack
 ) => httpPost("/Good/AddGood", data, callBack);
 
 export const modifyGoodPriceReq = (
@@ -22,7 +26,7 @@ export const modifyGoodPriceReq = (
     id: number;
     price: number;
   },
-  callBack: (res) => void
+  callBack: customRequestCallBack
 ) => httpPost("/Good/UpdateGood", data, callBack);
 
 export const modifyGoodStatusReq = (
@@ -30,7 +34,7 @@ export const modifyGoodStatusReq = (
     id: number;
     status: number;
   },
-  callBack: (res) => void
+  callBack: customRequestCallBack
 ) => httpPost("/Good/UpdateGood", data, callBack);
 
 export const deleteGoodPriceReq = (id: number, callBack: (res) => void) =>
