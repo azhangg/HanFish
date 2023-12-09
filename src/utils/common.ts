@@ -1,4 +1,5 @@
 import Taro from "@tarojs/taro";
+import moment from "moment";
 
 export const loading = () => {
   Taro.showLoading({ title: "加载中" });
@@ -12,6 +13,8 @@ export const msg = (msg: string) =>
     title: msg,
     icon: "none",
   });
+
+export const goLogin = () => Taro.redirectTo({ url: "/package/login/login" });
 
 export const clearObject = (raw: object, config?: { numberTo?: any }) => {
   const ignoreKeys = ["isTrusted", "_vts", "pointerId"];
@@ -35,4 +38,13 @@ export const clearObject = (raw: object, config?: { numberTo?: any }) => {
     }
   }
   return raw;
+};
+
+export const getTime = (time: string | Date) => {
+  const momentTime = moment(time);
+  if (momentTime.format("YYYYMMDD") == moment(Date.now()).format("YYYYMMDD"))
+    return momentTime.format("HH:mm");
+  else if (momentTime.format("YYYYMM") == moment(Date.now()).format("YYYYMM"))
+    return momentTime.format("MM-DD");
+  else return momentTime.format("YYYY-MM-DD HH:mm");
 };

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { AtIcon } from "taro-ui-vue3";
 import Taro from "@tarojs/taro";
 import { getOpenidReq, loginReq } from "@/apis/account";
@@ -7,6 +7,7 @@ import { storeToRefs } from "pinia";
 import { useStore } from "@/stores";
 import { uploadFiles } from "@/utils/request";
 import { BASE_URL } from "@/utils/config";
+import { msg } from "@/utils/common";
 import { useAccount } from "@/hooks/useAccount";
 
 const { getUserInfo } = storeToRefs(useStore());
@@ -78,54 +79,64 @@ const onLoginTap = () => {
   }
 
   if (nickName.value && avatarUrl.value) {
-    var openid = Taro.getStorageSync("openid");
-    if (openid) getAccessToken(openid);
-    else if (!openid) {
-      Taro.showLoading({
-        title: "加载中",
-      });
-      setTimeout(function () {
-        Taro.hideLoading();
-      }, 10000);
-      Taro.login({
-        success: function (res) {
-          if (res.code) {
-            getOpenidReq(
-              {
-                jsCode: res.code,
-                userName: nickName.value,
-                avatarUrl: avatarUrl.value,
-              },
-              (res: any) => {
-                const { data, isSuccess } = res.data;
-                if (isSuccess) {
-                  Taro.setStorage({
-                    key: "openid",
-                    data: data.openId,
-                  });
-                  getAccessToken(data.openId);
-                  getUserInfo.value = true;
-                  Taro.hideLoading();
-                  Taro.showToast({
-                    title: "登录成功",
-                    icon: "none",
-                  });
-                  Taro.switchTab({
-                    url: "/pages/user/user",
-                  });
-                } else
-                  Taro.showToast({
-                    title: "获取openid失败",
-                    icon: "none",
-                  });
-              }
-            );
-          }
-        },
-      });
-    }
+    Taro.showLoading({
+      title: "加载中",
+    });
+    setTimeout(function () {
+      Taro.hideLoading();
+    }, 10000);
+    Taro.login({
+      success: function (res) {
+        if (res.code) {
+          getOpenidReq(
+            {
+              jsCode: res.code,
+              userName: nickName.value,
+              avatarUrl: avatarUrl.value,
+            },
+            (res: any) => {
+              const { data, isSuccess } = res.data;
+              if (isSuccess) {
+                Taro.setStorage({
+                  key: "openid",
+                  data: data.openId,
+                });
+                getAccessToken(data.openId);
+                getUserInfo.value = true;
+                Taro.hideLoading();
+                Taro.showToast({
+                  title: "登录成功",
+                  icon: "none",
+                });
+                Taro.switchTab({
+                  url: "/pages/user/user",
+                });
+              } else
+                Taro.showToast({
+                  title: "获取openid失败",
+                  icon: "none",
+                });
+            }
+          );
+        }
+      },
+    });
   }
 };
+
+onMounted(() => {
+  var openid = Taro.getStorageSync("openid");
+  if (openid) {
+    getAccessToken(openid);
+    msg("即将自动登录");
+    setTimeout(() => {
+      Taro.switchTab({
+        url: "/pages/user/user",
+      });
+    }, 1500);
+    return;
+  }
+});
 </script>
 <template>
   <view class="login">

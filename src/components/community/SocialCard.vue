@@ -1,43 +1,72 @@
 <script setup lang="ts">
 import type SocialCardProps from "@/components/community/SocialCard";
 
-import { toRefs, onMounted, ref, watch, toRaw } from "vue";
+import { toRefs, onMounted, ref, watch } from "vue";
 import { BASE_URL } from "@/utils/config";
 
 import icon_like from "@/assets/icon/ico_likes.png";
 import icon_like_active from "@/assets/icon/ico_likes (1).png";
+import { getTime } from "@/utils/common";
+import { useStore } from "@/stores";
 
 const props = defineProps<SocialCardProps>();
 
 const emit = defineEmits<{
-  "update:isCollect": [isCollect: boolean];
-  "update:isLike": [isLike: boolean];
+  onIsCollectClick: [isCollect: boolean];
+  onIsLikeClick: [isLike: boolean];
 }>();
 
-const { text, imageUrls, comments, user, likes, collects, isLike, isCollect } =
-  toRefs(props);
+const {
+  text,
+  imageUrls,
+  comments,
+  user,
+  likes,
+  collects,
+  isLike,
+  isCollect,
+  createTime,
+} = toRefs(props);
 
 const collectState = ref(0);
 
-watch(
-  () => collectState.value,
-  (v) => emit("update:isCollect", v === 0 ? false : true)
-);
+const isLikeState = ref(false);
+
+const actionSheetVisible = ref(false);
+
+watch(props, () => {
+  isLikeState.value = isLike.value;
+  collectState.value = isCollect.value ? 1 : 0;
+});
 
 const onLikeTap = () => {
-  emit("update:isLike", !toRaw(isLike.value));
+  isLikeState.value = !isLikeState.value;
+  emit("onIsLikeClick", isLikeState.value);
+};
+
+const onCollectTap = () => {
+  emit("onIsCollectClick", collectState.value === 0 ? false : true);
+};
+
+const onLongPress = () => {
+  if (useStore().userInfo.id === user.value.id) actionSheetVisible.value = true;
 };
 
 onMounted(() => {
   collectState.value = isCollect.value ? 1 : 0;
+  isLikeState.value = isLike.value;
 });
 </script>
 <template>
-  <view class="social-card">
-    <image class="custom-avatar" :src="user.avatarUrl ?? ''" />
+  <view class="social-card" @longpress="onLongPress">
+    <image
+      :lazy-load="true"
+      class="custom-avatar"
+      :src="user.avatarUrl ? `${BASE_URL}/${user.avatarUrl}` : ''"
+    />
     <view class="head">
       <text>{{ user.name }}</text>
-      <text class="time">{{ `11/12 12:00` }}</text>
+      <text class="time">{{ getTime(createTime) }}</text>
     </view>
     <view>&emsp;</view>
     <view class="content roundness">
@@ -71,8 +100,8 @@ onMounted(() => {
         <text>{{ likes }}</text>
         <image
           class="content-bottom__likes"
-          :src="isLike ? icon_like_active : icon_like"
-          @tap="onLikeTap"
+          :src="isLikeState ? icon_like_active : icon_like"
+          @tap.stop="onLikeTap"
         />
         <text>{{ comments }}&emsp;</text>
         <image
@@ -80,7 +109,12 @@ onMounted(() => {
           src="@/assets/icon/comments.png"
         />
         <text>{{ collects }}&emsp;</text>
-        <nut-rate v-model="collectState" count="1" active-color="#ff6b81" />
+        <nut-rate
+          v-model="collectState"
+          count="1"
+          active-color="#ff6b81"
+          @tap.stop="onCollectTap"
+        />
       </view>
     </view>
   </view>
@@ -100,12 +134,12 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     .time {
-      color: $text-color;
+      color: #696a6d;
     }
   }
   .content {
     padding: 0 10rpx;
-    box-shadow: rgba(0, 0, 0, 0.25) 0px 25px 50px 25rpx;
+    box-shadow: rgba(0, 0, 0, 0.1) 20px 25px 50px 10rpx;
     &-text {
       margin: 20rpx 10rpx;
       display: -webkit-box;

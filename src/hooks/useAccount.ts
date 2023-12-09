@@ -29,5 +29,8 @@ const requestUserInfo = () => {
 };
 
 export const useAccount = () => {
-  return { getAccessToken, requestUserInfo, getOpenId };
+  const { accessToken, getUserInfo } = useStore();
+  const isLogin = accessToken && getUserInfo;
+
+  return { getAccessToken, requestUserInfo, getOpenId, isLogin };
 };

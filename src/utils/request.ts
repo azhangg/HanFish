@@ -2,6 +2,7 @@ import Taro from "@tarojs/taro";
 import { BASE_URL } from "./config";
 import { useStore } from "@/stores";
 import { storeToRefs } from "pinia";
+import { msg } from "@/utils/common";
 
 const { accessToken } = storeToRefs(useStore());
 
@@ -19,7 +20,17 @@ export const BasicRequest = (
     data: data,
     timeout: 10000,
     header: { Authorization: `Bearer ${accessToken.value}` },
-    success: success,
+    success: (res: any) => {
+      if (res.statusCode === 200) success(res);
+      else if (res.statusCode === 401) {
+        msg("当前未登录，请先登录");
+        setTimeout(() => {
+          Taro.redirectTo({ url: "/package/login/login" });
+        }, 1000);
+      } else {
+        console.log("状态码", res.statusCode);
+      }
+    },
     fail: (err) => {
       Taro.showToast({
         title: err.errMsg,

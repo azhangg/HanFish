@@ -2,9 +2,14 @@ import type { customRequestCallBack } from "@/utils/request";
 import { httpGet, httpPost } from "@/utils/request";
 
 export const getGoodsReq = (
-  data: { page: number; count: number; search: string; categoryId: number },
+  data: {
+    page: number;
+    count: number;
+    search: string;
+    categoryId: number;
+  },
   callBack: customRequestCallBack
-) => httpGet("/Good/GetGoodToPagination", data, callBack);
+) => httpGet("/Good/GetGoodToPagination", { ...data, status: 1 }, callBack);
 
 export const getGoodByIdReq = (id: number, callBack: customRequestCallBack) =>
   httpGet("/Good/GetGoodById", { id }, callBack);

@@ -9,7 +9,13 @@ export default {
   subpackages: [
     {
       root: "package",
-      pages: ["login/login", "goods/add/add", "goods/detail/detail"],
+      pages: [
+        "login/login",
+        "goods/add/add",
+        "goods/detail/detail",
+        "post/add/add",
+        "post/detail/detail",
+      ],
     },
   ],
   window: {

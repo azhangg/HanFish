@@ -1,98 +1,22 @@
 <script setup lang="ts">
-import type SocialCardProps from "@/components/community/SocialCard";
+import type { PostType } from "@/models/post/post";
 
 import SocialCard from "@/components/community/SocialCard.vue";
-import { ref, reactive } from "vue";
-import { DEFAULT_AVATAR } from "@/utils/config";
-
-const socialInfos = ref<SocialCardProps[]>([
-  {
-    id: 1,
-    text: "的撒大好的记录卡积分单发你打了的阿拉冷淡爱德华把订单哈播撒到拉萨表达了卡萨丁撒开绿灯吧撒肯定撒看德国撒娇的吧啊 近两年打赏",
-    imageUrls: [DEFAULT_AVATAR, DEFAULT_AVATAR],
-    comments: 539,
-    likes: 88,
-    collects: 666,
-    isLike: true,
-    isCollect: true,
-    createTime: "2023-12-1",
-    user: {
-      id: 1,
-      avatarUrl: "../../assets/images/OIP-C (6).jpg",
-      name: "张三封",
-    },
-  },
-  {
-    id: 2,
-    text: "娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏",
-    imageUrls: [DEFAULT_AVATAR],
-    comments: 539,
-    likes: 88,
-    collects: 583,
-    isLike: false,
-    isCollect: false,
-    createTime: "2023-12-1",
-    user: {
-      id: 1,
-      avatarUrl: "../../assets/images/OIP-C (6).jpg",
-      name: "张四封",
-    },
-  },
-  {
-    id: 3,
-    text: "娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏",
-    imageUrls: [DEFAULT_AVATAR, DEFAULT_AVATAR, DEFAULT_AVATAR],
-    comments: 539,
-    likes: 88,
-    collects: 583,
-    isLike: false,
-    isCollect: false,
-    createTime: "2023-12-1",
-    user: {
-      id: 1,
-      avatarUrl: "../../assets/images/OIP-C (6).jpg",
-      name: "张四封",
-    },
-  },
-  {
-    id: 4,
-    text: "娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏",
-    imageUrls: [DEFAULT_AVATAR, DEFAULT_AVATAR, DEFAULT_AVATAR, DEFAULT_AVATAR],
-    comments: 539,
-    likes: 88,
-    collects: 583,
-    isLike: false,
-    isCollect: false,
-    createTime: "2023-12-1",
-    user: {
-      id: 1,
-      avatarUrl: "../../assets/images/OIP-C (6).jpg",
-      name: "张四封",
-    },
-  },
-  {
-    id: 5,
-    text: "娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏娇的吧啊 近两年打赏",
-    imageUrls: [
-      DEFAULT_AVATAR,
-      DEFAULT_AVATAR,
-      DEFAULT_AVATAR,
-      DEFAULT_AVATAR,
-      DEFAULT_AVATAR,
-    ],
-    comments: 539,
-    likes: 88,
-    collects: 583,
-    isLike: false,
-    isCollect: false,
-    createTime: "2023-12-1",
-    user: {
-      id: 1,
-      avatarUrl: "../../assets/images/OIP-C (6).jpg",
-      name: "张四封",
-    },
-  },
-]);
+import { ref, reactive, onMounted, computed } from "vue";
+import Taro from "@tarojs/taro";
+import { getPostReq } from "@/apis/post";
+import { useAccount } from "@/hooks/useAccount";
+import {
+  getUserCollectPostIdsReq,
+  addPostCollectReq,
+  deletePostCollectReq,
+} from "@/apis/postCollect";
+import {
+  getUserLikePostIdsReq,
+  addPostLikeReq,
+  deletePostLikeReq,
+} from "@/apis/postLike";
+import { goLogin } from "@/utils/common";
 
 const pagination = reactive({
   page: 1,
@@ -101,38 +25,178 @@ const pagination = reactive({
   search: "",
 });
 
+const socialInfos = ref<PostType[]>([]);
+
+const collects = ref<number[]>([]);
+
+const likes = ref<number[]>([]);
+
+const postList = computed(() => {
+  return socialInfos.value.map((s) => {
+    return {
+      ...s,
+      isCollect: collects.value.includes(s.id),
+      isLike: likes.value.includes(s.id),
+    };
+  });
+});
+
 const onSearchClear = () => (pagination.search = "");
 
 const onSearchClick = () => {
-  console.log(123);
+  getPostList();
 };
 
 const onAddBtnTap = () => {
-  console.log(123);
+  Taro.navigateTo({
+    url: "/package/post/add/add",
+  });
 };
+
+const getPostList = () => {
+  getPostReq(pagination, (res) => {
+    const { isSuccess, data } = res.data;
+    if (isSuccess) {
+      socialInfos.value = data.data;
+      pagination.total = data.total;
+    }
+  });
+  if (useAccount().isLogin) {
+    getLikes();
+    getCollects();
+  }
+};
+
+const getCollects = () => {
+  getUserCollectPostIdsReq((res) => {
+    const { isSuccess, data } = res.data;
+    if (isSuccess) {
+      collects.value = data;
+    }
+  });
+};
+
+const getLikes = () => {
+  getUserLikePostIdsReq((res) => {
+    const { isSuccess, data } = res.data;
+    if (isSuccess) {
+      likes.value = data;
+    }
+  });
+};
+
+const onColectClick = (isCollect: boolean, postId: number) => {
+  if (useAccount().isLogin) {
+    isCollect && !collects.value.some((c) => c === postId)
+      ? addPostCollectReq(postId, (res) => {
+          const { isSuccess } = res.data;
+          if (isSuccess) {
+            const index = socialInfos.value.findIndex((s) => s.id === postId);
+            socialInfos.value[index].collects += 1;
+            collects.value.push(postId);
+          }
+        })
+      : deletePostCollectReq(postId, (res) => {
+          const { isSuccess } = res.data;
+          if (isSuccess) {
+            const index = socialInfos.value.findIndex((s) => s.id === postId);
+            socialInfos.value[index].collects -= 1;
+            collects.value.splice(
+              collects.value.findIndex((s) => s === postId),
+              1
+            );
+          }
+        });
+  } else {
+    goLogin();
+  }
+};
+
+const onLikeClick = (isLike: boolean, postId: number) => {
+  if (useAccount().isLogin) {
+    isLike
+      ? addPostLikeReq(postId, (res) => {
+          const { isSuccess } = res.data;
+          if (isSuccess) {
+            const index = socialInfos.value.findIndex((s) => s.id === postId);
+            socialInfos.value[index].likes += 1;
+            likes.value.push(postId);
+          }
+        })
+      : deletePostLikeReq(postId, (res) => {
+          const { isSuccess } = res.data;
+          if (isSuccess) {
+            const index = socialInfos.value.findIndex((s) => s.id === postId);
+            socialInfos.value[index].likes -= 1;
+            likes.value.splice(
+              likes.value.findIndex((s) => s === postId),
+              1
+            );
+          }
+        });
+  } else {
+    goLogin();
+  }
+};
+
+const onPostTap = (id: number, isCollect: boolean, isLike: boolean) => {
+  Taro.navigateTo({
+    url: `/package/post/detail/detail?id=${id}&isCollect=${isCollect}&isLike=${isLike}`,
+  });
+};
+
+Taro.usePullDownRefresh(() => {
+  pagination.search = "";
+  getPostList();
+  setTimeout(() => {
+    Taro.stopPullDownRefresh();
+  }, 1000);
+});
+
+Taro.useReachBottom(() => {
+  const { count, total } = pagination;
+  if (total > count) {
+    pagination.count += count;
+    getPostList();
+  }
+});
+
+Taro.useDidShow(() => {
+  if (useAccount().isLogin) {
+    getLikes();
+    getCollects();
+  }
+});
+
+onMounted(() => {
+  getPostList();
+});
 </script>
 
 <template>
   <view class="community">
     <AtSearchBar
       v-model:value="pagination.search"
-      placeholder="发帖人/内容"
       @clear="onSearchClear"
       @action-click="onSearchClick"
     />
     <SocialCard
-      v-for="item in socialInfos"
+      v-for="item in postList"
       :id="item.id"
-      :imageUrls="item.imageUrls"
+      :imageUrls="item.imgUrls"
       :text="item.text"
       :likes="item.likes"
-      :user="item.user"
+      :user="item.publisher"
       :comments="item.comments"
       :collects="item.collects"
       :createTime="item.createTime"
       v-model:isLike="item.isLike"
       v-model:isCollect="item.isCollect"
+      @on-is-collect-click="(e) => onColectClick(e, item.id)"
+      @on-is-like-click="(e) => onLikeClick(e, item.id)"
+      @tap="onPostTap(item.id, item.isCollect, item.isLike)"
     />
+    <nut-empty v-if="socialInfos.length === 0" description="无数据"></nut-empty>
     <movable-area>
       <movable-view direction="all" x="600rpx" y="1150rpx" @tap="onAddBtnTap">
         <view class="container">

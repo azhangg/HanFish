@@ -36,6 +36,8 @@ const imgUrls = [
 const swiperDuration = 500;
 const swiperInterval = 2000;
 
+const tabIndex = ref(0);
+
 const goodList = ref<GoodType[]>([]);
 
 const goodCategories = ref<{ id: number; name: string }[]>([]);
@@ -53,8 +55,9 @@ const goodListRight = computed(() =>
 );
 
 watch(
-  () => pagination.categoryId,
-  () => {
+  () => tabIndex.value,
+  (v) => {
+    pagination.categoryId = goodCategories.value[v].id;
     goodList.value = [];
     loadStatus.value = LoadStatus.loading;
     getGoodList();
@@ -162,7 +165,7 @@ onMounted(() => {
       </swiper-item>
     </swiper>
     <nut-tabs
-      v-model="pagination.categoryId"
+      v-model="tabIndex"
       title-scroll
       :title-gutter="goodCategories.length"
       name="tabName"

@@ -34,12 +34,7 @@ const good = reactive<{
 
 const categories = ref<{ id: number; name: string }[]>([]);
 
-const unChooseTagList = ref<string[]>([
-  "98成新",
-  "9成新",
-  "8成新",
-  "美女自用一手货",
-]);
+const unChooseTagList = ref<string[]>(["98成新", "9成新", "8成新"]);
 
 const fileList = ref<any[]>([]);
 

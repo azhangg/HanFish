@@ -79,7 +79,6 @@ onMounted(() => {
     </nut-swiper>
     <nut-price :price="goodInfo?.price" symbol="¥" size="large" />
     <view class="descript">
-      <text class="text-lg"> 物品描述： </text>
       <view>
         {{ goodInfo?.description }}
       </view>
@@ -122,7 +121,7 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
-    box-shadow: rgba(0, 0, 0, 0.25) 32rpx 25rpx 50rpx 25rpx;
+    box-shadow: rgba(0, 0, 0, 0.25) 32rpx 25rpx 50rpx 8rpx;
     .nut-avatar-round {
       overflow: hidden;
     }
