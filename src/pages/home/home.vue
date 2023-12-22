@@ -2,16 +2,20 @@
 import type { GoodType } from "@/models/good/good";
 import { AtSearchBar, AtLoadMore } from "taro-ui-vue3";
 import GoodCard from "@/components/home/GoodCard.vue";
-import { ref, onMounted, reactive, computed, watch } from "vue";
+import { ref, onMounted, onUnmounted, reactive, computed, watch } from "vue";
 import { LoadStatus } from "@/enums/index";
-import { useAccount } from "@/hooks/useAccount";
 import Taro from "@tarojs/taro";
 import { getGoodsReq } from "@/apis/good";
 import { getGoodCategoriesReq } from "@/apis/goodCategory";
 import { msg } from "@/utils/common";
 import { BASE_URL } from "@/utils/config";
+import { useEventCenter } from "@/hooks/useEvent";
+import { useStore } from "@/stores";
+import { storeToRefs } from "pinia";
 
-const { getAccessToken, requestUserInfo } = useAccount();
+useEventCenter();
+
+const { readyChatMessages } = storeToRefs(useStore());
 
 const pagination = reactive<{
   page: number;
@@ -133,12 +137,13 @@ const getGoodCategories = () => {
 };
 
 onMounted(() => {
-  getAccessToken();
   getGoodList();
   getGoodCategories();
-  setTimeout(() => {
-    requestUserInfo();
-  }, 2000);
+  Taro.eventCenter.trigger("login");
+});
+
+onUnmounted(() => {
+  Taro.eventCenter.off();
 });
 </script>
 
@@ -208,6 +213,9 @@ onMounted(() => {
       @click="handleLoadClick"
       :status="loadStatus"
     />
+    <view class="position-fixed w-0 h-0 c-transparent">
+      {{ readyChatMessages.length }}
+    </view>
     <movable-area>
       <movable-view direction="all" x="600rpx" y="1150rpx" @tap="onAddBtnTap">
         <view class="container">

@@ -102,6 +102,7 @@ const onLoginTap = () => {
                   data: data.openId,
                 });
                 getAccessToken(data.openId);
+                Taro.eventCenter.trigger("login");
                 getUserInfo.value = true;
                 Taro.hideLoading();
                 Taro.showToast({
@@ -129,6 +130,7 @@ onMounted(() => {
   if (openid) {
     getAccessToken(openid);
     msg("即将自动登录");
+    Taro.eventCenter.trigger("login");
     setTimeout(() => {
       Taro.switchTab({
         url: "/pages/user/user",

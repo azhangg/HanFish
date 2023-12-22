@@ -3,7 +3,7 @@ import type { PostType } from "@/models/post/post";
 import type { PostCommentType } from "@/models/post/postComment";
 
 import { onMounted, ref, computed } from "vue";
-import Taro from "@tarojs/taro";
+import Taro, { nextTick } from "@tarojs/taro";
 import { BASE_URL, PICTURE_ICON } from "@/utils/config";
 import { getTime, goLogin, msg } from "@/utils/common";
 import { getPostByIdReq } from "@/apis/post";
@@ -242,8 +242,8 @@ const onActionSheetChoose = (item) => {
 };
 
 const onInputBlur = () => {
-  inputFocus.value = false;
   currentCommentId.value = 0;
+  inputFocus.value = false;
   inputRef.value.blur();
 };
 
@@ -255,6 +255,11 @@ const onCommentImgClick = (url?: string) => {
   }
 };
 
+const onInputFocus = () => {
+  inputRef.value.focus();
+  inputFocus.value = true;
+};
+
 onMounted(() => {
   const { params } = Taro.useRouter();
   isCollect = params.isCollect == "true";
@@ -263,6 +268,10 @@ onMounted(() => {
   collectState.value = isCollect ? 1 : 0;
   getPostInfo(postId);
   getPostComments(postId);
+  //初始化inputRef
+  nextTick(() => {
+    inputRef.value.blur();
+  });
 });
 </script>
 <template>
@@ -337,7 +346,7 @@ onMounted(() => {
         v-model="comment"
         :cursor-spacing="15"
         placeholder="说点什么~"
-        @focus="inputFocus = true"
+        @focus="onInputFocus"
       />
       <nut-button
         v-if="inputFocus"

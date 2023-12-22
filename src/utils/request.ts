@@ -15,7 +15,7 @@ export const BasicRequest = (
   success: (res) => void
 ) =>
   Taro.request({
-    url: `${BASE_URL}/api${url}`,
+    url: `${BASE_URL}${url.includes("/hubs/") ? url : `/api${url}`}`,
     method: method,
     data: data,
     timeout: 10000,

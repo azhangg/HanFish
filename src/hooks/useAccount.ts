@@ -19,6 +19,7 @@ const getAccessToken = () => {
       }
     });
   }
+  return openid;
 };
 
 const requestUserInfo = () => {

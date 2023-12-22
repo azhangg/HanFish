@@ -1,5 +1,5 @@
 export default {
-  entryPagePath: "pages/community/community",
+  entryPagePath: "pages/home/home",
   pages: [
     "pages/home/home",
     "pages/community/community",
@@ -15,6 +15,7 @@ export default {
         "goods/detail/detail",
         "post/add/add",
         "post/detail/detail",
+        "chats/chat/chat",
       ],
     },
   ],

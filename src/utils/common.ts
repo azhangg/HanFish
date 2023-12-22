@@ -48,3 +48,5 @@ export const getTime = (time: string | Date) => {
     return momentTime.format("MM-DD");
   else return momentTime.format("YYYY-MM-DD HH:mm");
 };
+
+export const jsonParse = (data: any) => JSON.parse(JSON.stringify(data));

@@ -1,20 +1,40 @@
 <script setup lang="ts">
-import { AtBadge } from "taro-ui-vue3";
+import type { MessageItemType } from "@/components/message/item";
+
+import { withDefaults, toRefs } from "vue";
+import { BASE_URL } from "@/utils/config";
+import { getTime } from "@/utils/common";
+
+const props = withDefaults(defineProps<MessageItemType>(), {
+  userName: "",
+  avatarUrl: "",
+  message: "",
+  time: () => new Date(),
+  goodImgUrl: "",
+  unReadNum: 0,
+});
+
+const { userName, avatarUrl, message, goodImgUrl, time, unReadNum } =
+  toRefs(props);
 </script>
 <template>
   <view class="message-item">
-    <AtBadge :value="10" :maxValue="99">
-      <image class="user-avatar" :src="'touxiang'" />
-    </AtBadge>
+    <nut-badge :value="unReadNum" :max="99" top="0" right="8">
+      <image class="user-avatar" :src="`${BASE_URL}/${avatarUrl}`" />
+    </nut-badge>
     <view class="message-item__content">
       <view class="message-box">
-        <text class="user-name">张山里斯</text>
+        <text class="user-name">{{ userName }}</text>
         <text class="ellipsis-1 message">
-          打撒大厦大厦到拉萨拉拉肥很多凉粉案件路口放大了哈哈喽大厦里的哈利大厦积分哈佛和按计划案件客户啊空间哈看看卡
+          {{ message }}
         </text>
-        <text class="time"> 2023/9/4 10:30 </text>
+        <text class="time">{{ getTime(time) }}</text>
       </view>
-      <image class="goods-image" :src="'tupian'" />
+      <image
+        v-if="goodImgUrl"
+        class="goods-image"
+        :src="`${BASE_URL}/${goodImgUrl}`"
+      />
     </view>
   </view>
 </template>
@@ -29,6 +49,8 @@ $gap: 20rpx;
   grid-template-columns: $avatar-size auto;
   grid-template-rows: $image-size;
   gap: $gap;
+  border-bottom: 1rpx #f3ecec solid;
+  align-items: center;
   &__content {
     display: grid;
     grid-template-columns: auto $image-size;
@@ -39,6 +61,7 @@ $gap: 20rpx;
       flex-direction: column;
       .user-name {
         font-weight: bold;
+        color: $text-color;
       }
       .message {
         font-size: 28rpx;
