@@ -11,21 +11,31 @@ import {
   getChatMessagesReq,
   readMessageReq,
   addChatMessageReq,
+  withDrawMessageReq,
+  refuseMessageReq,
 } from "@/apis/chatMessage";
 import { BASE_URL, PICTURE_ICON } from "@/utils/config";
 import moment from "moment";
 import { IconFont } from "@nutui/icons-vue-taro";
 import { nextTick } from "@tarojs/runtime";
 import { storeToRefs } from "pinia";
+import { msg } from "@/utils/common";
 
 enum ChooseMode {
   表情,
   其它,
 }
 
+const UPLOADURL = `${BASE_URL}/api/Files/UploadFile`;
+
 const { readyChatMessages } = storeToRefs(useStore());
 
-const { userInfo, addChatMessageRow, readChatMessage } = useStore();
+const { userInfo, accessToken, addChatMessageRow, readChatMessage } =
+  useStore();
+
+const REQUEST_HEADER = {
+  Authorization: `Bearer ${accessToken}`,
+};
 
 let userId = 0;
 
@@ -37,9 +47,39 @@ let targetInfo: TargetInfoType = {
   roleId: 0,
 };
 
+let x = 0;
+
+let y = 0;
+
+let oldesttFlag = false;
+
+const uploadFileRef = ref();
+
+const fileList = ref<any[]>([]);
+
+const previewImgSrc = ref<{ src: string }[]>([]);
+
 const collapseModel = ref(false);
 
+const previewVisible = ref(false);
+
+const withdrawVisible = ref(false);
+
 const message = ref("");
+
+const messageRow = ref<ChatMessageType>({
+  id: 0,
+  content: "",
+  senderId: 0,
+  receiverId: 0,
+  type: 1,
+  typeName: "",
+  isRead: false,
+  refusherIds: [],
+  createTime: new Date(),
+});
+
+const overlayVisible = ref(false);
 
 const emojiIndex = ref(0);
 
@@ -47,11 +87,12 @@ const emojisList = ref<{ title: string; emojis: string[] }[]>([]);
 
 const chooseMode = ref(ChooseMode.其它);
 
-const chatMessageList = computed<ChatMessageType[]>(
-  () =>
+const chatMessageList = computed<ChatMessageType[]>(() => {
+  const result =
     readyChatMessages.value.find((rcm) => rcm.targetInfo.id === userId)
-      ?.chatMessages ?? []
-);
+      ?.chatMessages ?? [];
+  return result.filter((r) => !r.refusherIds.includes(userInfo.id));
+});
 
 const style = computed(() => {
   let padding = 0;
@@ -110,6 +151,7 @@ const getChatMessageFormDataBase = (targetId: number, time: string) => {
     const { data } = res.data;
     if (data) {
       addChatMessageRow([data]);
+      oldesttFlag = data.chatMessages.length === 0;
     }
   });
 };
@@ -151,7 +193,7 @@ const scrollToBottom = () =>
     Taro.pageScrollTo({
       selector: "#bottom",
       offsetTop: 0,
-      duration: 1000,
+      duration: 500,
       fail: (res) => {
         console.log("滚动失败", res);
       },
@@ -183,23 +225,112 @@ const onAddTap = () => {
 };
 
 const onSendClick = () => {
-  addChatMessageReq(
-    {
-      senderId: userInfo.id,
-      receiverId: userId,
-      content: message.value,
-      type: 1,
-    },
-    (res) => {
-      const { isSuccess, data } = res.data;
-      if (isSuccess) {
-        addChatMessageRow([{ targetInfo, chatMessages: [data] }]);
-        message.value = "";
-        scrollToBottom();
+  if (message.value.trim())
+    addChatMessageReq(
+      {
+        senderId: userInfo.id,
+        receiverId: userId,
+        content: message.value,
+        type: 1,
+      },
+      (res) => {
+        const { isSuccess, data } = res.data;
+        if (isSuccess) {
+          addChatMessageRow([{ targetInfo, chatMessages: [data] }]);
+          message.value = "";
+          scrollToBottom();
+        }
       }
-    }
-  );
+    );
+  else msg("不能包含空格");
 };
+
+const onUploadSuccess = (res) => {
+  const result = JSON.parse(res.data.data);
+  const { isSuccess, data, message } = result;
+  if (isSuccess) {
+    addChatMessageReq(
+      {
+        senderId: userInfo.id,
+        receiverId: userId,
+        content: data[0],
+        type: 2,
+      },
+      (res) => {
+        const { isSuccess, data } = res.data;
+        if (isSuccess) {
+          addChatMessageRow([{ targetInfo, chatMessages: [data] }]);
+          scrollToBottom();
+        }
+      }
+    );
+  } else {
+    msg(message ?? "上传失败");
+  }
+};
+
+const onUploadFailure = () => {
+  if (fileList.value.length > 1) fileList.value.shift();
+};
+
+const onChoosePictureTap = () => {
+  uploadFileRef.value.chooseImage();
+};
+
+const onMessageLongPress = (message: ChatMessageType, e) => {
+  const { touches } = e;
+  x = Math.floor(touches[0].clientX);
+  y = Math.floor(touches[0].clientY);
+  if (y < 100) y += 50;
+  else y -= 50;
+  messageRow.value = message;
+  withdrawVisible.value =
+    moment(messageRow.value.createTime).add(2, "m").valueOf() >
+    moment().valueOf();
+  overlayVisible.value = true;
+};
+
+const onPictureTap = (url: string) => {
+  const src = `${BASE_URL}/${url}`;
+  if (previewImgSrc.value.length > 0) previewImgSrc.value[0].src = src;
+  else previewImgSrc.value.push({ src: src });
+  previewVisible.value = true;
+};
+
+const onWithdrawTap = () => {
+  withDrawMessageReq(messageRow.value.id, (res) => {
+    const { isSuccess } = res.data;
+    if (isSuccess) {
+      messageRow.value.type = 4;
+      addChatMessageRow([{ targetInfo, chatMessages: [messageRow.value] }]);
+      overlayVisible.value = false;
+    }
+  });
+};
+
+const onDeleteMessageTap = () => {
+  refuseMessageReq(messageRow.value.id, (res) => {
+    const { isSuccess } = res.data;
+    if (isSuccess) {
+      messageRow.value.refusherIds.push(userInfo.id);
+      addChatMessageRow([{ targetInfo, chatMessages: [messageRow.value] }]);
+      overlayVisible.value = false;
+      msg("删除成功");
+    }
+  });
+};
+
+Taro.usePullDownRefresh(() => {
+  if (chatMessageList.value.length > 0 && !oldesttFlag) {
+    getChatMessageFormDataBase(
+      userId,
+      chatMessageList.value[0].createTime.toString()
+    );
+  }
+  setTimeout(() => {
+    Taro.stopPullDownRefresh();
+  }, 1000);
+});
 
 onBeforeMount(() => {
   getTargetId();
@@ -209,11 +340,13 @@ onBeforeMount(() => {
 onMounted(() => {
   getChatMessageFormDataBase(userId, "");
   getEmojiList();
-  scrollToBottom();
   setTimeout(() => {
     readMsg();
   }, 1000);
   Taro.eventCenter.on("readSendChatMessage", readSendChatMessageHandler);
+  nextTick(() => {
+    scrollToBottom();
+  });
 });
 
 onUnmounted(() => {
@@ -234,7 +367,17 @@ onUnmounted(() => {
           {{ getTime(message.createTime) }}
         </text>
       </view>
+      <view v-if="message.type === 4" class="flex justify-center mb-2">
+        <text class="bg-#9a9a9a33 p-1 rounded-1 text-25">
+          {{
+            `${
+              message.senderId === userInfo.id ? "您" : targetInfo.name
+            }撤回了一条消息`
+          }}
+        </text>
+      </view>
       <view
+        v-else
         :class="['chat-item', { reverse: message.senderId === userInfo.id }]"
       >
         <image
@@ -244,17 +387,29 @@ onUnmounted(() => {
               : targetInfo.avatarUrl
           }`"
         />
+
         <view
+          v-if="message.type === 1"
           :class="[
             'chat-item-wrap',
             { 'bg-i': message.senderId === userInfo.id },
           ]"
           user-select
+          @longpress="onMessageLongPress(message, $event)"
         >
-          {{ message.content }}
+          <view>
+            {{ message.content }}
+          </view>
         </view>
+        <image
+          v-else-if="message.type === 2"
+          class="messagee-picture"
+          :src="`${BASE_URL}/${message.content}`"
+          @longpress="onMessageLongPress(message, $event)"
+          @tap="onPictureTap(message.content)"
+        />
         <view
-          v-if="message.senderId === userInfo.id"
+          v-if="message.senderId === userInfo.id && message.type != 4"
           :class="['flex', 'items-end', message.isRead ? 'c-#908989' : 'c-red']"
         >
           {{ message.isRead ? "已读" : "未读" }}
@@ -268,6 +423,19 @@ onUnmounted(() => {
       @tap="onInputCoverTap"
     ></view>
     <view class="bottom-fixed">
+      <nut-uploader
+        ref="uploadFileRef"
+        class="upload"
+        :url="UPLOADURL"
+        :is-preview="false"
+        v-model:file-list="fileList"
+        name="formFile"
+        :headers="REQUEST_HEADER"
+        maximum="2"
+        :multiple="false"
+        @success="onUploadSuccess"
+        @failure="onUploadFailure"
+      ></nut-uploader>
       <view class="w-full flex justify-between items-center flex-gap-2">
         <input
           class="bg-#F5F3F2 c-#696a6d p-2 flex-1 rounded-3"
@@ -308,7 +476,7 @@ onUnmounted(() => {
           <view class="p-1 text-40 flex flex-wrap overflow-y-auto">
             <view
               v-for="emoji in emojisList[emojiIndex].emojis"
-              class="w-65 h-65 flex items-end justify-center flex-gap-2"
+              class="w-80 h-80 flex items-end justify-center flex-gap-2"
               @tap="message += emoji"
             >
               {{ emoji }}
@@ -319,10 +487,35 @@ onUnmounted(() => {
           v-else
           class="w-65 h-65 mt-1"
           :src="`${BASE_URL}/${PICTURE_ICON}`"
-          @tap.stop=""
+          @tap.stop="onChoosePictureTap"
         />
       </view>
     </view>
+    <nut-popup
+      :style="{
+        left: `${x}px`,
+        top: `${y}px`,
+      }"
+      :overlay-style="{
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+      }"
+      v-model:visible="overlayVisible"
+    >
+      <view
+        class="flex flex-col bg-#f5e0bd flex-gap-2 rounded-1 justify-center p-2"
+      >
+        <view v-if="withdrawVisible" class="text-#827171" @tap="onWithdrawTap">
+          撤回
+        </view>
+        <view class="text-red" @tap="onDeleteMessageTap">删除</view>
+      </view>
+    </nut-popup>
+    <nut-image-preview
+      :show="previewVisible"
+      :images="previewImgSrc"
+      :show-index="false"
+      @close="previewVisible = false"
+    />
   </view>
 </template>
 <style lang="scss">
@@ -360,6 +553,11 @@ onUnmounted(() => {
       border-radius: 12rpx;
       word-break: break-all;
     }
+    .messagee-picture {
+      border-radius: 8rpx !important;
+      height: 260rpx;
+      width: 260rpx;
+    }
   }
   .cover-input {
     position: fixed;
@@ -380,6 +578,21 @@ onUnmounted(() => {
     padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
     box-shadow: rgba(0, 0, 0, 0.25) 32rpx 25rpx 50rpx 8rpx;
     flex-direction: column;
+    .upload {
+      position: fixed;
+      bottom: 190rpx;
+      left: 16rpx;
+      pointer-events: none;
+      .nut-uploader__upload {
+        visibility: hidden;
+      }
+      .nut-uploader__preview {
+        pointer-events: auto;
+      }
+      .nut-uploader__preview {
+        display: none;
+      }
+    }
   }
   .nut-collapse {
     width: 100%;

@@ -8,6 +8,12 @@ import { onMounted } from "vue";
 import { getGoodByIdReq } from "@/apis/good";
 import { loading, msg } from "@/utils/common";
 import { BASE_URL, DEFAULT_AVATAR } from "@/utils/config";
+import { useStore } from "@/stores";
+import { useAccount } from "@/hooks/useAccount";
+
+const { userInfo, addChatMessageRow } = useStore();
+
+const { getOpenId, isLogin } = useAccount();
 
 const goodId = parseInt(Taro.getCurrentInstance().router?.params?.id ?? "0");
 
@@ -44,6 +50,34 @@ const getGoodInfo = () => {
       msg(message);
     }
   });
+};
+
+const onTalkInPrivateClick = () => {
+  const openid = getOpenId();
+  if (openid && isLogin) {
+    addChatMessageRow([
+      {
+        targetInfo: {
+          id: Number(goodInfo.value?.user.id) ?? 0,
+          name: goodInfo.value?.user.name ?? "",
+          roleId: 3,
+          loginName: openid,
+          avatarUrl: goodInfo.value?.user.avatarUrl ?? "",
+        },
+        chatMessages: [],
+      },
+    ]);
+    Taro.navigateTo({
+      url: `/package/chats/chat/chat?targetId=${goodInfo.value?.user.id}`,
+    });
+  } else {
+    msg("请先登录");
+    setTimeout(() => {
+      Taro.navigateTo({
+        url: `/package/login/login`,
+      });
+    }, 1000);
+  }
 };
 
 onMounted(() => {
@@ -85,16 +119,28 @@ onMounted(() => {
     </view>
     <view class="bottom-plane">
       <view class="flex flex-gap-2 items-center">
-        <nut-avatar size="normal">
+        <nut-avatar size="small">
           <img
             :src="`${BASE_URL}/${goodInfo?.user.avatarUrl ?? DEFAULT_AVATAR}`"
           />
         </nut-avatar>
         <text>{{ goodInfo?.user.name }}</text>
       </view>
-      <view class="flex flex-gap-2">
-        <nut-button plain type="primary">私聊</nut-button>
-        <nut-button type="primary">下单</nut-button>
+      <view v-if="userInfo.id != goodInfo?.user.id" class="flex flex-gap-2">
+        <nut-button
+          plain
+          type="primary"
+          size="small"
+          @click="onTalkInPrivateClick"
+          >私聊</nut-button
+        >
+        <nut-button type="primary" size="small">下单</nut-button>
+      </view>
+      <view v-else class="flex flex-gap-2">
+        <nut-button plain type="primary" size="small" @click=""
+          >改价</nut-button
+        >
+        <nut-button type="primary" size="small">下架</nut-button>
       </view>
     </view>
   </view>

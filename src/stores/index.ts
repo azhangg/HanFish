@@ -24,14 +24,17 @@ export const useStore = defineStore("store", {
         let unReadNum = 0;
         if (messages.length > 0) {
           state.chatMessages = messages.sort((curr, next) => {
-            return (
-              moment(
-                next.chatMessages[next.chatMessages.length - 1]?.createTime
-              ).valueOf() -
-              moment(
-                curr.chatMessages[curr.chatMessages.length - 1]?.createTime
-              ).valueOf()
-            );
+            if (curr.chatMessages.length == 0 || next.chatMessages.length == 0)
+              return 0;
+            else
+              return (
+                moment(
+                  next.chatMessages[next.chatMessages.length - 1]?.createTime
+                ).valueOf() -
+                moment(
+                  curr.chatMessages[curr.chatMessages.length - 1]?.createTime
+                ).valueOf()
+              );
           });
         }
 
@@ -119,11 +122,14 @@ export const useStore = defineStore("store", {
               );
               if (index < 0) {
                 state.chatMessages[rowindex].chatMessages.push(msg);
-                state.chatMessages[rowindex].chatMessages.sort(
-                  (curr, next) =>
-                    moment(curr.createTime).valueOf() -
-                    moment(next.createTime).valueOf()
-                );
+                if (state.chatMessages[rowindex].chatMessages.length > 1)
+                  state.chatMessages[rowindex].chatMessages.sort(
+                    (curr, next) =>
+                      moment(curr.createTime).valueOf() -
+                      moment(next.createTime).valueOf()
+                  );
+              } else {
+                state.chatMessages[rowindex].chatMessages[index] = msg;
               }
             });
           } else {
@@ -131,13 +137,28 @@ export const useStore = defineStore("store", {
           }
         });
 
-        state.chatMessages.sort(
-          (curr, next) =>
-            moment(next.chatMessages[0].createTime).valueOf() -
-            moment(curr.chatMessages[0].createTime).valueOf()
-        );
+        state.chatMessages.sort((curr, next) => {
+          if (curr.chatMessages.length == 0 || next.chatMessages.length == 0)
+            return 0;
+          else
+            return (
+              moment(next.chatMessages[0].createTime).valueOf() -
+              moment(curr.chatMessages[0].createTime).valueOf()
+            );
+        });
 
         Taro.setStorageSync("chatMessages", state.chatMessages);
+      });
+    },
+    removeChatMessageRow(targetId: number) {
+      this.$patch((state) => {
+        const index = state.chatMessages.findIndex(
+          (cm) => cm.targetInfo.id === targetId
+        );
+        if (index >= 0) {
+          state.chatMessages.splice(index, 1);
+          Taro.setStorageSync("chatMessages", state.chatMessages);
+        }
       });
     },
     readChatMessage(targetId: number) {

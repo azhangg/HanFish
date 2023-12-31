@@ -6,7 +6,7 @@
     "es6": true,
     "enhance": false,
     "compileHotReLoad": false,
-    "postcss": false,
+    "postcss": true,
     "minified": true,
     "babelSetting": {
       "ignore": [],
@@ -24,7 +24,7 @@
     "tabIndent": "insertSpaces",
     "tabSize": 2
   },
-  "libVersion": "2.19.6",
+  "libVersion": "3.2.2",
   "packOptions": {
     "ignore": [],
     "include": []

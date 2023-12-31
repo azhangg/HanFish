@@ -4,7 +4,12 @@ import { useStore } from "@/stores";
 
 const getOpenId = () => Taro.getStorageSync("openid");
 
-const getAccessToken = () => {
+/**
+ * @brief 获取访问令牌
+ * @param nextFn 需要等待接口完成后执行的函数
+ * @return 用户微信openid
+ */
+const getAccessToken = (nextFn?: () => void) => {
   var openid = getOpenId();
   if (openid) {
     loginReq({ userName: openid, password: openid }, (res) => {
@@ -16,16 +21,22 @@ const getAccessToken = () => {
         });
         useStore().setAccessToken(data.accessToken);
         useStore().setLogin();
+        setTimeout(() => {
+          nextFn ? nextFn() : null;
+        }, 200);
       }
     });
   }
   return openid;
 };
 
-const requestUserInfo = () => {
+const requestUserInfo = (nextFn?: () => void) => {
   getUserInfoReq((res) => {
     const { id, name, avatarUrl } = res.data.data;
     useStore().setUserInfo({ id, name, avatarUrl });
+    setTimeout(() => {
+      nextFn ? nextFn() : null;
+    }, 200);
   });
 };
 

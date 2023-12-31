@@ -3,6 +3,7 @@ import { BASE_URL } from "./config";
 import { useStore } from "@/stores";
 import { storeToRefs } from "pinia";
 import { msg } from "@/utils/common";
+import { useAccount } from "@/hooks/useAccount";
 
 const { accessToken } = storeToRefs(useStore());
 
@@ -23,10 +24,17 @@ export const BasicRequest = (
     success: (res: any) => {
       if (res.statusCode === 200) success(res);
       else if (res.statusCode === 401) {
-        msg("当前未登录，请先登录");
-        setTimeout(() => {
-          Taro.redirectTo({ url: "/package/login/login" });
-        }, 1000);
+        if (
+          !useAccount().getAccessToken(() => {
+            console.log("刷新令牌成功,正在重新请求接口");
+            BasicRequest(method, url, data, success);
+          })
+        ) {
+          msg("当前未登录，请先登录");
+          setTimeout(() => {
+            Taro.redirectTo({ url: "/package/login/login" });
+          }, 1000);
+        }
       } else {
         console.log("状态码", res.statusCode);
       }

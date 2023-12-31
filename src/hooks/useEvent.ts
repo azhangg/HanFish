@@ -12,17 +12,15 @@ const { addChatMessageRow, updateTabBarBadge } = useStore();
 const { chatMessages } = storeToRefs(useStore());
 
 const loginEventHandler = (_) => {
-  const openId = getAccessToken();
-  setTimeout(() => {
-    if (openId) {
-      requestUserInfo();
+  getAccessToken(() => {
+    requestUserInfo(() => {
       startSocketTask();
       getChatMessagesUserUnreadReq((res) => {
         const { data } = res.data;
         if (data.length > 0) addChatMessageRow(data);
       });
-    }
-  }, 1200);
+    });
+  });
 };
 
 const unReadChatsUpdateHandler = () => {

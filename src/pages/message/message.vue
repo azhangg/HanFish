@@ -2,7 +2,7 @@
 import type { ChatMessageRowType } from "@/models/message/chatMessage";
 
 import MessageItem from "@/components/message/item.vue";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import Taro from "@tarojs/taro";
 import { useStore } from "@/stores";
 import { storeToRefs } from "pinia";
@@ -10,14 +10,27 @@ import moment from "moment";
 
 const { readyChatMessages, userInfo } = storeToRefs(useStore());
 
+const { removeChatMessageRow } = useStore();
+
 let searchText = ref("");
+
+const swipeRef = ref();
+
+const chatMessageList = ref<ChatMessageRowType[]>([]);
+
+const chatMessagesComputed = computed(() =>
+  chatMessageList.value.filter((rcm) => rcm.chatMessages.length != 0)
+);
 
 const convertMessageContent = (message: ChatMessageRowType) => {
   const msg = message.chatMessages[message.chatMessages.length - 1];
   if (msg.type === 1) return msg.content;
   else if (msg.type === 2) return "[图片消息]";
   else if (msg.type === 3) return "[订单消息]";
-  else if (msg.type === 4) return "对方撤回一条消息";
+  else if (msg.type === 4)
+    return `${
+      msg.senderId === userInfo.value.id ? "您" : "对方"
+    }撤回了一条消息`;
   else return "";
 };
 
@@ -28,12 +41,18 @@ const userUnreadNum = (message: ChatMessageRowType) => {
   ).length;
 };
 
+const setChatMessageList = () => {
+  chatMessageList.value = readyChatMessages.value;
+};
+
 const onSearchClear = () => {
   searchText.value = " ";
 };
 
 const onActionClick = () => {
-  console.log(searchText.value);
+  chatMessageList.value = readyChatMessages.value.filter((rcm) =>
+    rcm.targetInfo.name.includes(searchText.value)
+  );
 };
 
 const onMessageTap = (targetId: number) => {
@@ -42,34 +61,66 @@ const onMessageTap = (targetId: number) => {
   });
 };
 
+const onDeleteMessageClick = (targetId: number, index: number) => {
+  removeChatMessageRow(targetId);
+  swipeRef.value[index].close();
+};
+
 Taro.useDidShow(() => {
   Taro.eventCenter.trigger("unReadChatsUpdate");
 });
 
-onMounted(() => {});
+Taro.usePullDownRefresh(() => {
+  searchText.value = "";
+  setChatMessageList();
+  setTimeout(() => {
+    Taro.stopPullDownRefresh();
+  }, 1000);
+});
+
+onMounted(() => {
+  setChatMessageList();
+});
 </script>
 <template>
   <view class="message">
     <AtSearchBar
-      placeholder="搜索聊天记录/联系人"
+      placeholder="搜索联系人"
       v-model:value="searchText"
       @clear="onSearchClear"
       @action-click="onActionClick"
     />
-    <MessageItem
-      v-for="message in readyChatMessages"
-      :user-name="message.targetInfo.name"
-      :avatar-url="message.targetInfo.avatarUrl"
-      :time="
-        moment(
-          message.chatMessages[message.chatMessages.length - 1].createTime
-        ).toDate()
-      "
-      :message="convertMessageContent(message)"
-      :good-img-url="message.chatMessages[0]?.good?.imgUrls[0] ?? ''"
-      :un-read-num="userUnreadNum(message)"
-      @tap="onMessageTap(message.targetInfo.id)"
-    />
+    <nut-swipe-group lock>
+      <nut-swipe
+        ref="swipeRef"
+        v-for="(message, index) in chatMessagesComputed"
+        :name="`${message.targetInfo.id}`"
+      >
+        <MessageItem
+          :user-name="message.targetInfo.name"
+          :avatar-url="message.targetInfo.avatarUrl"
+          :time="
+            moment(
+              message.chatMessages[message.chatMessages.length - 1].createTime
+            ).toDate()
+          "
+          :message="convertMessageContent(message)"
+          :good-img-url="message.chatMessages[0]?.good?.imgUrls[0] ?? ''"
+          :un-read-num="userUnreadNum(message)"
+          @tap="onMessageTap(message.targetInfo.id)"
+        />
+        <template #right>
+          <nut-button
+            shape="square"
+            style="height: 100%"
+            type="primary"
+            @click="onDeleteMessageClick(message.targetInfo.id, index)"
+          >
+            删除
+          </nut-button>
+        </template>
+      </nut-swipe>
+    </nut-swipe-group>
   </view>
 </template>
 
