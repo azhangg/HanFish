@@ -17,6 +17,9 @@ import {
   deletePostLikeReq,
 } from "@/apis/postLike";
 import { goLogin } from "@/utils/common";
+import { useStore } from "@/stores";
+
+const { refreshUnReadMsgNum } = useStore();
 
 const pagination = reactive({
   page: 1,
@@ -166,6 +169,7 @@ Taro.useDidShow(() => {
     getLikes();
     getCollects();
   }
+  refreshUnReadMsgNum();
 });
 
 onMounted(() => {

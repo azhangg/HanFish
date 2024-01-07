@@ -3,6 +3,7 @@ import type {
   ChatMessageType,
   TargetInfoType,
 } from "@/models/message/chatMessage";
+import type { OrderType } from "@/models/good/order";
 
 import { onBeforeMount, onMounted, onUnmounted, ref, computed } from "vue";
 import Taro from "@tarojs/taro";
@@ -20,6 +21,7 @@ import { IconFont } from "@nutui/icons-vue-taro";
 import { nextTick } from "@tarojs/runtime";
 import { storeToRefs } from "pinia";
 import { msg } from "@/utils/common";
+import emojiJson from "@/assets/emoji.json";
 
 enum ChooseMode {
   表情,
@@ -113,22 +115,7 @@ const getTargetId = () => {
 };
 
 const getEmojiList = () => {
-  Taro.request({
-    url: `${BASE_URL}/Files/Static/emoji.json`,
-    method: "GET",
-    timeout: 10000,
-    success: (res: any) => {
-      const { data } = res;
-      emojisList.value = data;
-    },
-    fail: (err) => {
-      Taro.showToast({
-        title: err.errMsg,
-        icon: "none",
-        duration: 3000,
-      });
-    },
-  });
+  emojisList.value = emojiJson;
 };
 
 const getTargetInfo = () => {
@@ -163,6 +150,25 @@ const getTime = (time: string | Date) => {
   else if (momentTime.format("YYYYMM") == moment(Date.now()).format("YYYYMM"))
     return momentTime.format("MM/DD HH:mm");
   else return momentTime.format("YYYY/MM/DD HH:mm");
+};
+
+const orderStatus = (status: number) => {
+  switch (status) {
+    case 1:
+      return "待付款";
+    case 2:
+      return "待发货";
+    case 3:
+      return "待收货";
+    case 4:
+      return "待评价";
+    case 5:
+      return "已完成";
+    case 6:
+      return "已取消";
+    default:
+      return "";
+  }
 };
 
 const readMsg = () => {
@@ -205,6 +211,10 @@ const readSendChatMessageHandler = () => {
   setTimeout(() => {
     readMsg();
   }, 1000);
+};
+
+const orderContentParse = (content: string): OrderType => {
+  return JSON.parse(content);
 };
 
 const onChooseEmojiTap = () => {
@@ -286,7 +296,7 @@ const onMessageLongPress = (message: ChatMessageType, e) => {
   messageRow.value = message;
   withdrawVisible.value =
     moment(messageRow.value.createTime).add(2, "m").valueOf() >
-    moment().valueOf();
+      moment().valueOf() && message.type != 5;
   overlayVisible.value = true;
 };
 
@@ -318,6 +328,14 @@ const onDeleteMessageTap = () => {
       msg("删除成功");
     }
   });
+};
+
+const onMessageOfOrderTap = (orderInfo: string) => {
+  const { id } = JSON.parse(orderInfo);
+  if (id)
+    Taro.navigateTo({
+      url: `/package/user/deals/detail?orderId=${id}`,
+    });
 };
 
 Taro.usePullDownRefresh(() => {
@@ -408,6 +426,26 @@ onUnmounted(() => {
           @longpress="onMessageLongPress(message, $event)"
           @tap="onPictureTap(message.content)"
         />
+        <view
+          v-else-if="message.type === 3"
+          class="flex flex-gap-2 p-2 bg-#cec63a2b rounded-2"
+          @tap="onMessageOfOrderTap(message.content)"
+        >
+          <image
+            style="height: 150rpx; width: 150rpx; border-radius: 8rpx"
+            :src="`${BASE_URL}/${
+              orderContentParse(message.content)?.good?.imgUrls[0] ?? ''
+            }`"
+          />
+          <view class="flex w-240 flex-col flex-gap-1 justify-between">
+            <view class="text-ellipsis line-clamp-2">
+              {{ orderContentParse(message.content).good.description }}
+            </view>
+            <view class="text-36 c-red font-bold">
+              {{ orderStatus(orderContentParse(message.content).status) }}
+            </view>
+          </view>
+        </view>
         <view
           v-if="message.senderId === userInfo.id && message.type != 4"
           :class="['flex', 'items-end', message.isRead ? 'c-#908989' : 'c-red']"

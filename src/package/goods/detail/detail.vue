@@ -80,6 +80,46 @@ const onTalkInPrivateClick = () => {
   }
 };
 
+const onPlaceOrderClick = () => {
+  const openid = getOpenId();
+  if (openid && isLogin) {
+    getGoodByIdReq(goodInfo.value?.id ?? 0, (res) => {
+      const { isSuccess, data } = res.data;
+      if (isSuccess && data.status == "未交易") {
+        Taro.navigateTo({
+          url: `/package/goods/order/confirm?goodId=${
+            goodInfo.value?.id
+          }&goodInfo=${encodeURI(JSON.stringify(goodInfo?.value))}`,
+        });
+      } else {
+        msg("来晚了，已被别的客官抢先一步");
+        Taro.eventCenter.trigger("homeRefreshData");
+        setTimeout(() => {
+          Taro.switchTab({
+            url: "/pages/home/home",
+          });
+        }, 1000);
+      }
+    });
+  } else {
+    msg("请先登录");
+    setTimeout(() => {
+      Taro.navigateTo({
+        url: `/package/login/login`,
+      });
+    }, 1000);
+  }
+};
+
+const onShowOrderClick = () => {
+  const order = useStore().orders.find((o) => o.goodId === goodId);
+  if (order) {
+    Taro.navigateTo({
+      url: `/package/user/deals/detail?orderId=${order.id}`,
+    });
+  }
+};
+
 onMounted(() => {
   getGoodInfo();
 });
@@ -132,14 +172,32 @@ onMounted(() => {
           type="primary"
           size="small"
           @click="onTalkInPrivateClick"
-          >私聊</nut-button
         >
-        <nut-button type="primary" size="small">下单</nut-button>
+          私聊
+        </nut-button>
+        <nut-button
+          v-if="
+            !useStore().orders.some((o) => o.goodId === goodId && o.status != 6)
+          "
+          type="primary"
+          size="small"
+          @click="onPlaceOrderClick"
+        >
+          下单
+        </nut-button>
+        <nut-button
+          v-else
+          type="primary"
+          size="small"
+          @click="onShowOrderClick"
+        >
+          查看订单
+        </nut-button>
       </view>
       <view v-else class="flex flex-gap-2">
-        <nut-button plain type="primary" size="small" @click=""
-          >改价</nut-button
-        >
+        <nut-button plain type="primary" size="small" @click="">
+          改价
+        </nut-button>
         <nut-button type="primary" size="small">下架</nut-button>
       </view>
     </view>

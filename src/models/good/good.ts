@@ -5,8 +5,9 @@ export interface GoodType {
   description: string;
   price: number;
   createTime: Date;
+  userId: number;
   user: {
-    id: number | string;
+    id: number;
     avatarUrl?: string;
     name: string;
   };

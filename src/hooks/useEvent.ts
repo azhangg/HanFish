@@ -2,14 +2,24 @@ import Taro from "@tarojs/taro";
 import { startSocketTask } from "@/utils/socket";
 import { useAccount } from "@/hooks/useAccount";
 import { getChatMessagesUserUnreadReq } from "@/apis/chatMessage";
+import { getOrdersByUserIdReq } from "@/apis/order";
 import { useStore } from "@/stores";
 import { storeToRefs } from "pinia";
 
 const { getAccessToken, requestUserInfo } = useAccount();
 
-const { addChatMessageRow, updateTabBarBadge } = useStore();
+const { addChatMessageRow, updateTabBarBadge, addOrder } = useStore();
 
 const { chatMessages } = storeToRefs(useStore());
+
+const getOrders = () => {
+  getOrdersByUserIdReq((res) => {
+    const { isSuccess, data } = res.data;
+    if (isSuccess) {
+      addOrder(data);
+    }
+  });
+};
 
 const loginEventHandler = (_) => {
   getAccessToken(() => {
@@ -19,6 +29,7 @@ const loginEventHandler = (_) => {
         const { data } = res.data;
         if (data.length > 0) addChatMessageRow(data);
       });
+      getOrders();
     });
   });
 };
@@ -52,6 +63,10 @@ const SendMessageHandler = (e) => {
     //不包含在eventCenter里,是单独滴
     Taro.eventCenter.trigger("readSendChatMessage");
   }
+  if (chatMessages[0].type === 3) {
+    addOrder([JSON.parse(chatMessages[0].content)]);
+  }
+
   addChatMessageRow([{ targetInfo, chatMessages }]);
 };
 

@@ -1,14 +1,65 @@
 <script setup lang="ts">
-import { AtList, AtListItem, AtGrid } from "taro-ui-vue3";
-import { onMounted } from "vue";
+import { AtList, AtListItem } from "taro-ui-vue3";
 import { BASE_URL, DEFAULT_AVATAR } from "@/utils/config";
 import { useStore } from "@/stores";
 import Taro from "@tarojs/taro";
 import { storeToRefs } from "pinia";
 import { useAccount } from "@/hooks/useAccount";
 
-const { userInfo, getUserInfo } = storeToRefs(useStore());
+const icons = [
+  {
+    image: `${BASE_URL}/Files/SystemResource/20231231/20231231102610_06780025-D8E9-4D94-B256-5767BACA9818.png`,
+    value: "待付款",
+    status: 1,
+  },
+  {
+    image: `${BASE_URL}/Files/SystemResource/20231231/20231231102610_7A95A588-D449-44B1-B097-C83F4AD19B14.png`,
+    value: "待发货",
+    status: 2,
+  },
+  {
+    image: `${BASE_URL}/Files/SystemResource/20231231/20231231142559_9D00BCF8-EE5F-44B2-BA29-CEBD88326FAD.png`,
+    value: "待收货",
+    status: 3,
+  },
+  {
+    image: `${BASE_URL}/Files/SystemResource/20231231/20231231102610_39B3F42E-3CB2-4903-9332-F6787E628CB5.png`,
+    value: "待评价",
+    status: 4,
+  },
+  {
+    image: `${BASE_URL}/Files/SystemResource/20231231/20231231102610_A66E3061-AF5F-4CBD-9A26-8321272F9576.png`,
+    value: "已完成",
+    status: 5,
+  },
+];
+
+const images = [
+  {
+    name: "帖子",
+    url: `${BASE_URL}/Files/SystemResource/20231231/20231231131202_80C53040-6B46-4D62-81A7-A2FC8B592B32.png`,
+  },
+  {
+    name: "评论",
+    url: `${BASE_URL}/Files/SystemResource/20231231/20231231131202_7AEC230A-E43A-4936-9EC4-584E5FBDA47F.png`,
+  },
+  {
+    name: "点赞",
+    url: `${BASE_URL}/Files/SystemResource/20231231/20231231131202_76A4B6BA-AFA5-4793-A4EA-39E10396D317.png`,
+  },
+  {
+    name: "收藏",
+    url: `${BASE_URL}/Files/SystemResource/20231231/20231231131202_0737888E-686B-43DE-93FA-1F06EA5CEFBA.png`,
+  },
+];
+
+const { userInfo, getUserInfo, orders } = storeToRefs(useStore());
 const { getOpenId, getAccessToken, requestUserInfo } = useAccount();
+const { refreshUnReadMsgNum } = useStore();
+
+const orderNum = (status: number) => {
+  return orders.value.filter((o) => o.status === status).length;
+};
 
 const accountClickHandler = () => {
   if (!getUserInfo.value) {
@@ -24,7 +75,21 @@ const accountClickHandler = () => {
   }
 };
 
-onMounted(() => {});
+const onAllDealTap = () => {
+  Taro.navigateTo({
+    url: "/package/user/deals/deals",
+  });
+};
+
+const onDealStatusTap = (status: number) => {
+  Taro.navigateTo({
+    url: `/package/user/deals/deals?status=${status}`,
+  });
+};
+
+Taro.useDidShow(() => {
+  refreshUnReadMsgNum();
+});
 </script>
 <template>
   <view class="user">
@@ -48,52 +113,59 @@ onMounted(() => {});
         </text>
       </view>
       <view class="user-order box-shadow roundness">
-        <AtList :hasBorder="false">
+        <AtList :hasBorder="false" @tap="onAllDealTap">
           <AtListItem title="我的交易" extraText="全部交易" arrow="right" />
         </AtList>
-        <AtGrid
-          :hasBorder="false"
-          :columnNum="5"
-          :data="[
-            {
-              image:
-                'https://img12.360buyimg.com/jdphoto/s72x72_jfs/t6160/14/2008729947/2754/7d512a86/595c3aeeNa89ddf71.png',
-              value: '领取中心',
-            },
-            {
-              image:
-                'https://img20.360buyimg.com/jdphoto/s72x72_jfs/t15151/308/1012305375/2300/536ee6ef/5a411466N040a074b.png',
-              value: '找折扣',
-            },
-            {
-              image:
-                'https://img10.360buyimg.com/jdphoto/s72x72_jfs/t5872/209/5240187906/2872/8fa98cd/595c3b2aN4155b931.png',
-              value: '领会员',
-            },
-            {
-              image:
-                'https://img12.360buyimg.com/jdphoto/s72x72_jfs/t10660/330/203667368/1672/801735d7/59c85643N31e68303.png',
-              value: '新品首发',
-            },
-            {
-              image:
-                'https://img14.360buyimg.com/jdphoto/s72x72_jfs/t17251/336/1311038817/3177/72595a07/5ac44618Na1db7b09.png',
-              value: '领京豆',
-            },
-            {
-              image:
-                'https://img30.360buyimg.com/jdphoto/s72x72_jfs/t5770/97/5184449507/2423/294d5f95/595c3b4dNbc6bc95d.png',
-              value: '手机馆',
-            },
-          ]"
-        />
+        <view class="grid grid-cols-5 pl-2 pr-2 pb-2 text-#827171 text-28">
+          <view
+            v-for="item in icons"
+            class="flex flex-col items-center"
+            @tap="onDealStatusTap(item.status)"
+          >
+            <nut-badge :value="orderNum(item.status != 5 ? item.status : 0)">
+              <image class="h-65 w-65" :src="item?.image" />
+            </nut-badge>
+            <text>{{ item?.value }}</text>
+          </view>
+        </view>
+      </view>
+      <view class="mt-0 box-shadow roundness">
+        <AtList :hasBorder="false">
+          <AtListItem title="社区" extraText="我的主页" arrow="right" />
+        </AtList>
+        <view
+          class="grid grid-cols-4 pl-2 pr-2 pb-2 grid-gap-2 text-#827171 text-28"
+        >
+          <view
+            v-for="item in images"
+            class="flex h-100 w-full items-center justify-center flex-gap-1 bg-gradient-to-br from-white to-#ff6b81/30 rounded-2"
+          >
+            {{ item.name }}
+            <image class="h-50 w-50" :src="item.url" />
+          </view>
+        </view>
       </view>
       <view class="other box-shadow roundness">
         <AtList :hasBorder="false">
-          <AtListItem title="收货地址" arrow="right" />
-          <AtListItem title="优惠卷" extraText="10" arrow="right" />
-          <AtListItem title="积分" extraText="2" arrow="right" />
+          <AtListItem title="闲置物品" extraText="10" arrow="right" />
+          <AtListItem
+            title="收货地址"
+            arrow="right"
+            @click="
+              Taro.navigateTo({
+                url: '/package/user/receivingAddress/receivingAddress',
+              })
+            "
+          />
+          <AtListItem title="个人信息" arrow="right" />
         </AtList>
+      </view>
+      <nut-button class="box-shadow border-0 border-none" type="default">
+        清除缓存
+      </nut-button>
+      <nut-button class="box-shadow" type="primary">退出登录</nut-button>
+      <view class="flex justify-center text-#827171 text-26">
+        version：dev
       </view>
     </view>
   </view>
@@ -105,7 +177,7 @@ $top: 175rpx;
 .user {
   .background {
     width: 100%;
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     z-index: -1;
@@ -134,6 +206,12 @@ $top: 175rpx;
         font-weight: bold;
       }
     }
+  }
+  .at-list__item:active {
+    background-color: white;
+  }
+  .nut-button--default {
+    border: none;
   }
 }
 </style>

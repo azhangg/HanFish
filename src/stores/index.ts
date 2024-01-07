@@ -1,4 +1,5 @@
 import type { ChatMessageRowType } from "@/models/message/chatMessage";
+import type { OrderType } from "@/models/good/order";
 
 import { defineStore } from "pinia";
 import Taro from "@tarojs/taro";
@@ -15,6 +16,7 @@ export const useStore = defineStore("store", {
       },
       getUserInfo: false,
       chatMessages: new Array<ChatMessageRowType>(),
+      orders: new Array<OrderType>(),
     };
   },
   getters: {
@@ -106,8 +108,37 @@ export const useStore = defineStore("store", {
       this.$patch((state) => {
         state.getUserInfo = false;
         state.accessToken = "";
+        state.chatMessages = [];
+        state.orders = [];
       });
+      Taro.removeStorageSync("chatMessages");
       this.clearUserInfo();
+    },
+    refreshUnReadMsgNum() {
+      const messages = Taro.getStorageSync("chatMessages");
+      if (messages) {
+        let unReadNum = 0;
+        messages.forEach((item) => {
+          item.chatMessages.forEach((msg) => {
+            if (!msg.isRead && msg.receiverId === this.userInfo.id)
+              unReadNum += 1;
+          });
+        });
+        if (unReadNum > 0) {
+          const isTabbarPage = Taro.useRouter().path.startsWith("/pages");
+          if (isTabbarPage)
+            Taro.setTabBarBadge({
+              index: 2,
+              text: `${unReadNum}`,
+            });
+        } else {
+          const isTabbarPage = Taro.useRouter().path.startsWith("/pages");
+          if (isTabbarPage)
+            Taro.removeTabBarBadge({
+              index: 2,
+            });
+        }
+      }
     },
     addChatMessageRow(msgs: ChatMessageRowType[]) {
       this.$patch((state) => {
@@ -209,6 +240,33 @@ export const useStore = defineStore("store", {
               index: 2,
             });
         }
+      });
+    },
+    addOrder(orders: OrderType[]) {
+      this.$patch((state) => {
+        const ids = state.orders.map((o) => o.id);
+        orders.forEach((item) => {
+          if (ids.includes(item.id)) {
+            const index = state.orders.findIndex((o) => o.id === item.id);
+            if (index >= 0) state.orders.splice(index, 1, item);
+          } else {
+            if (state.orders.some((o) => o.createTime > item.createTime))
+              state.orders.push(item);
+            else state.orders.unshift(item);
+          }
+        });
+      });
+    },
+    updateOrder(order: OrderType) {
+      this.$patch((state) => {
+        const index = state.orders.findIndex((o) => o.id === order.id);
+        if (index >= 0) state.orders.splice(index, 1, order);
+      });
+    },
+    deleteOrder(id: number) {
+      this.$patch((state) => {
+        const index = state.orders.findIndex((o) => o.id === id);
+        if (index >= 0) state.orders.splice(index, 1);
       });
     },
   },

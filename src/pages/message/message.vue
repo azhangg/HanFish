@@ -68,6 +68,7 @@ const onDeleteMessageClick = (targetId: number, index: number) => {
 
 Taro.useDidShow(() => {
   Taro.eventCenter.trigger("unReadChatsUpdate");
+  setChatMessageList();
 });
 
 Taro.usePullDownRefresh(() => {
@@ -78,9 +79,7 @@ Taro.usePullDownRefresh(() => {
   }, 1000);
 });
 
-onMounted(() => {
-  setChatMessageList();
-});
+onMounted(() => {});
 </script>
 <template>
   <view class="message">

@@ -50,3 +50,15 @@ export const getTime = (time: string | Date) => {
 };
 
 export const jsonParse = (data: any) => JSON.parse(JSON.stringify(data));
+
+export const testTelPhoneNumber = (number: string) => {
+  const regex =
+    /^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\d{8}$/;
+  return regex.test(number);
+};
+
+export const pcaSplit = (pacString: string) => {
+  const regex =
+    "(?<province>[^省]+自治区|.*?省|.*?行政区|.*?市)(?<city>[^市]+自治州|.*?地区|.*?行政单位|.+盟|市辖区|.*?市|.*?县)(?<county>[^县]+县|.+区|.+市|.+旗|.+海域|.+岛)?(?<village>.*)";
+  return pacString.match(regex) ?? [];
+};

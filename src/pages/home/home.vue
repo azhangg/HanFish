@@ -17,6 +17,8 @@ useEventCenter();
 
 const { readyChatMessages } = storeToRefs(useStore());
 
+const { refreshUnReadMsgNum } = useStore();
+
 const pagination = reactive<{
   page: number;
   count: number;
@@ -67,14 +69,6 @@ watch(
     getGoodList();
   }
 );
-
-Taro.usePullDownRefresh(() => {
-  pagination.search = "";
-  getGoodList();
-  setTimeout(() => {
-    Taro.stopPullDownRefresh();
-  }, 1000);
-});
 
 const onSearchClick = () => {
   goodList.value = [];
@@ -136,10 +130,27 @@ const getGoodCategories = () => {
   });
 };
 
+const onHomeRefreshDataHandler = () => {
+  getGoodList();
+};
+
+Taro.usePullDownRefresh(() => {
+  pagination.search = "";
+  getGoodList();
+  setTimeout(() => {
+    Taro.stopPullDownRefresh();
+  }, 1000);
+});
+
+Taro.useDidShow(() => {
+  refreshUnReadMsgNum();
+});
+
 onMounted(() => {
   getGoodList();
   getGoodCategories();
   Taro.eventCenter.trigger("login");
+  Taro.eventCenter.on("homeRefreshData", onHomeRefreshDataHandler);
 });
 
 onUnmounted(() => {
