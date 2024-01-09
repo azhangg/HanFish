@@ -111,8 +111,17 @@ export const useStore = defineStore("store", {
         state.chatMessages = [];
         state.orders = [];
       });
-      Taro.removeStorageSync("chatMessages");
+      Taro.clearStorageSync();
       this.clearUserInfo();
+      Taro.redirectTo({
+        url: "/package/login/login",
+      });
+    },
+    clearCache() {
+      Taro.removeStorageSync("chatMessages");
+      this.$patch((state) => {
+        state.chatMessages = [];
+      });
     },
     refreshUnReadMsgNum() {
       const messages = Taro.getStorageSync("chatMessages");

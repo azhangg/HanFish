@@ -7,6 +7,7 @@ import Taro from "@tarojs/taro";
 import { useStore } from "@/stores";
 import { storeToRefs } from "pinia";
 import moment from "moment";
+import { goPage } from "@/utils/common";
 
 const { readyChatMessages, userInfo } = storeToRefs(useStore());
 
@@ -18,9 +19,14 @@ const swipeRef = ref();
 
 const chatMessageList = ref<ChatMessageRowType[]>([]);
 
-const chatMessagesComputed = computed(() =>
-  chatMessageList.value.filter((rcm) => rcm.chatMessages.length != 0)
-);
+const chatMessagesComputed = computed(() => {
+  chatMessageList.value = readyChatMessages.value;
+  return chatMessageList.value.filter(
+    (rcm) =>
+      rcm.chatMessages.length != 0 &&
+      rcm.targetInfo.name.includes(searchText.value)
+  );
+});
 
 const convertMessageContent = (message: ChatMessageRowType) => {
   const msg = message.chatMessages[message.chatMessages.length - 1];
@@ -41,12 +47,8 @@ const userUnreadNum = (message: ChatMessageRowType) => {
   ).length;
 };
 
-const setChatMessageList = () => {
-  chatMessageList.value = readyChatMessages.value;
-};
-
 const onSearchClear = () => {
-  searchText.value = " ";
+  searchText.value = "";
 };
 
 const onActionClick = () => {
@@ -56,9 +58,7 @@ const onActionClick = () => {
 };
 
 const onMessageTap = (targetId: number) => {
-  Taro.navigateTo({
-    url: `/package/chats/chat/chat?targetId=${targetId}`,
-  });
+  goPage(`/package/chats/chat/chat?targetId=${targetId}`);
 };
 
 const onDeleteMessageClick = (targetId: number, index: number) => {
@@ -68,12 +68,10 @@ const onDeleteMessageClick = (targetId: number, index: number) => {
 
 Taro.useDidShow(() => {
   Taro.eventCenter.trigger("unReadChatsUpdate");
-  setChatMessageList();
 });
 
 Taro.usePullDownRefresh(() => {
   searchText.value = "";
-  setChatMessageList();
   setTimeout(() => {
     Taro.stopPullDownRefresh();
   }, 1000);
@@ -89,6 +87,11 @@ onMounted(() => {});
       @clear="onSearchClear"
       @action-click="onActionClick"
     />
+    <nut-empty
+      v-if="chatMessagesComputed.length === 0"
+      image="empty"
+      description="暂无消息"
+    ></nut-empty>
     <nut-swipe-group lock>
       <nut-swipe
         ref="swipeRef"

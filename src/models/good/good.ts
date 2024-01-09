@@ -6,6 +6,7 @@ export interface GoodType {
   price: number;
   createTime: Date;
   userId: number;
+  status: string;
   user: {
     id: number;
     avatarUrl?: string;

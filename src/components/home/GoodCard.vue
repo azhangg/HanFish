@@ -6,7 +6,7 @@ import { toRefs } from "vue";
 
 const props = defineProps<GoodCardProps>();
 
-const { imgUrl, tags, price, description, user } = toRefs(props);
+const { imgUrl, tags, price, description, user, status } = toRefs(props);
 </script>
 <template>
   <view class="good-card">
@@ -25,11 +25,13 @@ const { imgUrl, tags, price, description, user } = toRefs(props);
         <text class="user-name">{{ user.name }}</text>
       </view>
     </view>
+    <view v-if="status != '未交易'" class="off-shelf"> {{ status }} </view>
   </view>
 </template>
 
 <style lang="scss">
 .good-card {
+  position: relative;
   border-radius: 20rpx;
   overflow: hidden;
   box-shadow: $box-shadow;
@@ -83,6 +85,22 @@ const { imgUrl, tags, price, description, user } = toRefs(props);
     padding: 0 20rpx;
     border-color: $primary;
     margin: 0 0 0 15rpx;
+  }
+  .off-shelf {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $primary;
+    font-size: 40rpx;
+    font-weight: bold;
+    top: 0;
+    right: 0;
+    height: 150rpx;
+    width: 150rpx;
+    border: 4rpx $primary solid;
+    border-radius: 50%;
+    transform: rotate(45deg);
   }
 }
 .sub {

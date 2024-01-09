@@ -5,7 +5,7 @@ import type { PostCommentType } from "@/models/post/postComment";
 import { onMounted, ref, computed } from "vue";
 import Taro, { nextTick } from "@tarojs/taro";
 import { BASE_URL, PICTURE_ICON } from "@/utils/config";
-import { getTime, goLogin, msg } from "@/utils/common";
+import { getTime, goLogin, msg, goPage } from "@/utils/common";
 import { getPostByIdReq } from "@/apis/post";
 import {
   getPostCommentsByPostIdReq,
@@ -97,6 +97,18 @@ const getPostInfo = (id: number) => {
       postInfo.value = data;
       postInfo.value.isCollect = isCollect;
       postInfo.value.isLike = isLike;
+    } else {
+      msg("该帖子不存在");
+      const eventChannel =
+        Taro.getCurrentPages()[
+          Taro.getCurrentPages().length - 1
+        ]?.getOpenerEventChannel();
+      if (eventChannel) {
+        eventChannel.emit("acceptDataFromPostDetail");
+      }
+      setTimeout(() => {
+        Taro.navigateBack();
+      }, 1000);
     }
   });
 };
@@ -175,6 +187,8 @@ const onCollectTap = () => {
 
 const onLikeTap = () => {
   if (useAccount().isLogin) {
+    isLike = !isLike;
+    postInfo.value.isLike = isLike;
     isLike
       ? addPostLikeReq(postInfo.value.id, (res) => {
           const { isSuccess } = res.data;
@@ -277,7 +291,12 @@ onMounted(() => {
 <template>
   <view class="post-detail">
     <view class="user-info">
-      <view class="flex items-center gap-2">
+      <view
+        class="flex items-center gap-2"
+        @tap="
+          goPage(`/package/user/personal/home?userId=${postInfo.publisher.id}`)
+        "
+      >
         <image
           v-if="postInfo.publisher.avatarUrl"
           :lazy-load="true"

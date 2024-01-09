@@ -2,8 +2,10 @@ import type { customRequestCallBack } from "@/utils/request";
 
 import { httpGet, httpPost } from "@/utils/request";
 
-export const getGoodAppraisesReq = (callBack: customRequestCallBack) =>
-  httpGet("/GoodAppraise/GetGoodAppraises", {}, callBack);
+export const getGoodAppraisesReq = (
+  userId: number,
+  callBack: customRequestCallBack
+) => httpGet("/GoodAppraise/GetGoodAppraises", { userId }, callBack);
 
 export const addGoodAppraiseReq = (
   data: {

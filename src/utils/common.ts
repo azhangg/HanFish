@@ -62,3 +62,21 @@ export const pcaSplit = (pacString: string) => {
     "(?<province>[^省]+自治区|.*?省|.*?行政区|.*?市)(?<city>[^市]+自治州|.*?地区|.*?行政单位|.+盟|市辖区|.*?市|.*?县)(?<county>[^县]+县|.+区|.+市|.+旗|.+海域|.+岛)?(?<village>.*)";
   return pacString.match(regex) ?? [];
 };
+
+export const goPage = (url: string, events?: TaroGeneral.IAnyObject) => {
+  Taro.navigateTo({
+    url: url,
+    events: events,
+    complete() {
+      const pageslength = Taro.getCurrentPages().length;
+      if (pageslength == 10) {
+        msg("超出最大页面跳转限制");
+        setTimeout(() => {
+          Taro.switchTab({
+            url: "/pages/home/home",
+          });
+        }, 1000);
+      }
+    },
+  });
+};

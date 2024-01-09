@@ -16,7 +16,7 @@ import {
   addPostLikeReq,
   deletePostLikeReq,
 } from "@/apis/postLike";
-import { goLogin } from "@/utils/common";
+import { goLogin, goPage } from "@/utils/common";
 import { useStore } from "@/stores";
 
 const { refreshUnReadMsgNum } = useStore();
@@ -51,9 +51,7 @@ const onSearchClick = () => {
 };
 
 const onAddBtnTap = () => {
-  Taro.navigateTo({
-    url: "/package/post/add/add",
-  });
+  goPage("/package/post/add/add");
 };
 
 const getPostList = () => {
@@ -143,9 +141,14 @@ const onLikeClick = (isLike: boolean, postId: number) => {
 };
 
 const onPostTap = (id: number, isCollect: boolean, isLike: boolean) => {
-  Taro.navigateTo({
-    url: `/package/post/detail/detail?id=${id}&isCollect=${isCollect}&isLike=${isLike}`,
-  });
+  goPage(
+    `/package/post/detail/detail?id=${id}&isCollect=${isCollect}&isLike=${isLike}`,
+    {
+      acceptDataFromPostDetail: () => {
+        getPostList();
+      },
+    }
+  );
 };
 
 Taro.usePullDownRefresh(() => {
@@ -169,6 +172,7 @@ Taro.useDidShow(() => {
     getLikes();
     getCollects();
   }
+  getPostList();
   refreshUnReadMsgNum();
 });
 
@@ -200,7 +204,11 @@ onMounted(() => {
       @on-is-like-click="(e) => onLikeClick(e, item.id)"
       @tap="onPostTap(item.id, item.isCollect, item.isLike)"
     />
-    <nut-empty v-if="socialInfos.length === 0" description="无数据"></nut-empty>
+    <nut-empty
+      v-if="socialInfos.length === 0"
+      image="empty"
+      description="暂无动态"
+    ></nut-empty>
     <movable-area>
       <movable-view direction="all" x="600rpx" y="1150rpx" @tap="onAddBtnTap">
         <view class="container">

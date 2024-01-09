@@ -5,7 +5,7 @@ import Comment from "./comment.vue";
 
 import { withDefaults, toRefs, ref } from "vue";
 import { BASE_URL } from "@/utils/config";
-import { getTime } from "@/utils/common";
+import { getTime, goPage } from "@/utils/common";
 
 const props = withDefaults(
   defineProps<{ data: PostCommentType[]; publisherId?: number }>(),
@@ -41,6 +41,7 @@ const onImgClick = (url?: string) => {
         v-if="item.avatarUrl"
         :lazy-load="true"
         :src="`${BASE_URL}/${item.avatarUrl}`"
+        @tap="goPage(`/package/user/personal/home?userId=${item.userId}`)"
       />
       <text>
         {{ item.userName }}

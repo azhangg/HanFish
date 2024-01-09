@@ -5,6 +5,8 @@ import { useStore } from "@/stores";
 import Taro from "@tarojs/taro";
 import { storeToRefs } from "pinia";
 import { useAccount } from "@/hooks/useAccount";
+import { goPage, msg } from "@/utils/common";
+import { ref } from "vue";
 
 const icons = [
   {
@@ -36,26 +38,32 @@ const icons = [
 
 const images = [
   {
-    name: "帖子",
+    name: "交易",
     url: `${BASE_URL}/Files/SystemResource/20231231/20231231131202_80C53040-6B46-4D62-81A7-A2FC8B592B32.png`,
+    active: 0,
   },
   {
-    name: "评论",
+    name: "帖子",
     url: `${BASE_URL}/Files/SystemResource/20231231/20231231131202_7AEC230A-E43A-4936-9EC4-584E5FBDA47F.png`,
+    active: 1,
   },
   {
     name: "点赞",
     url: `${BASE_URL}/Files/SystemResource/20231231/20231231131202_76A4B6BA-AFA5-4793-A4EA-39E10396D317.png`,
+    active: 2,
   },
   {
     name: "收藏",
     url: `${BASE_URL}/Files/SystemResource/20231231/20231231131202_0737888E-686B-43DE-93FA-1F06EA5CEFBA.png`,
+    active: 3,
   },
 ];
 
 const { userInfo, getUserInfo, orders } = storeToRefs(useStore());
-const { getOpenId, getAccessToken, requestUserInfo } = useAccount();
-const { refreshUnReadMsgNum } = useStore();
+const { getOpenId, getAccessToken, requestUserInfo, checkLogin } = useAccount();
+const { refreshUnReadMsgNum, clearCache, loginOut } = useStore();
+
+const dialogVisible = ref(false);
 
 const orderNum = (status: number) => {
   return orders.value.filter((o) => o.status === status).length;
@@ -72,19 +80,37 @@ const accountClickHandler = () => {
       Taro.redirectTo({
         url: "/package/login/login",
       });
+  } else {
+    goPage(`/package/user/personal/edit`);
   }
 };
 
 const onAllDealTap = () => {
-  Taro.navigateTo({
-    url: "/package/user/deals/deals",
-  });
+  if (checkLogin()) {
+    goPage("/package/user/deals/deals");
+  }
 };
 
 const onDealStatusTap = (status: number) => {
-  Taro.navigateTo({
-    url: `/package/user/deals/deals?status=${status}`,
-  });
+  if (checkLogin()) {
+    goPage(`/package/user/deals/deals?status=${status}`);
+  }
+};
+
+const onPersonalHomeTap = (active?: number) => {
+  if (checkLogin()) {
+    goPage(`/package/user/personal/home?userId=${userInfo.value.id}
+      ${active ? "&active=" + active : ""}`);
+  }
+};
+
+const onClearCacheClick = () => {
+  dialogVisible.value = true;
+};
+
+const onConfirmClearClick = () => {
+  clearCache();
+  msg("清理缓存成功");
 };
 
 Taro.useDidShow(() => {
@@ -131,7 +157,12 @@ Taro.useDidShow(() => {
       </view>
       <view class="mt-0 box-shadow roundness">
         <AtList :hasBorder="false">
-          <AtListItem title="社区" extraText="我的主页" arrow="right" />
+          <AtListItem
+            title="社区"
+            extraText="我的主页"
+            arrow="right"
+            @click="onPersonalHomeTap"
+          />
         </AtList>
         <view
           class="grid grid-cols-4 pl-2 pr-2 pb-2 grid-gap-2 text-#827171 text-28"
@@ -139,6 +170,7 @@ Taro.useDidShow(() => {
           <view
             v-for="item in images"
             class="flex h-100 w-full items-center justify-center flex-gap-1 bg-gradient-to-br from-white to-#ff6b81/30 rounded-2"
+            @tap="onPersonalHomeTap(item.active)"
           >
             {{ item.name }}
             <image class="h-50 w-50" :src="item.url" />
@@ -147,27 +179,49 @@ Taro.useDidShow(() => {
       </view>
       <view class="other box-shadow roundness">
         <AtList :hasBorder="false">
-          <AtListItem title="闲置物品" extraText="10" arrow="right" />
+          <AtListItem
+            title="闲置物品"
+            arrow="right"
+            @click="
+              goPage(`/package/user/personal/idleGood?userId=${userInfo.id}`)
+            "
+          />
           <AtListItem
             title="收货地址"
             arrow="right"
-            @click="
-              Taro.navigateTo({
-                url: '/package/user/receivingAddress/receivingAddress',
-              })
-            "
+            @click="goPage('/package/user/receivingAddress/receivingAddress')"
           />
-          <AtListItem title="个人信息" arrow="right" />
+          <AtListItem
+            title="个人信息"
+            arrow="right"
+            @click="goPage(`/package/user/personal/edit`)"
+          />
         </AtList>
       </view>
-      <nut-button class="box-shadow border-0 border-none" type="default">
+      <nut-button
+        class="box-shadow border-0 border-none"
+        type="default"
+        @click="onClearCacheClick"
+      >
         清除缓存
       </nut-button>
-      <nut-button class="box-shadow" type="primary">退出登录</nut-button>
+      <nut-button class="box-shadow" type="primary" @click="loginOut()"
+        >退出登录</nut-button
+      >
       <view class="flex justify-center text-#827171 text-26">
         version：dev
       </view>
     </view>
+    <nut-dialog
+      no-cancel-btn
+      :overlay-style="{
+        backgroundColor: 'rgba(0, 0, 0, .1)',
+      }"
+      title="温馨提示"
+      content="该操作将会清除聊天记录，您确定清除缓存吗。"
+      v-model:visible="dialogVisible"
+      @ok="onConfirmClearClick"
+    />
   </view>
 </template>
 

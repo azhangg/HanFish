@@ -11,8 +11,18 @@ export const deletePostLikeReq = (
   callBack: customRequestCallBack
 ) => httpPost("/PostLike/DeletePostLike", { postId }, callBack);
 
-export const getUserLikePostIdsReq = (callBack: customRequestCallBack) =>
-  httpGet("/PostLike/GetUserLikePostIds", {}, callBack);
+export const getUserLikePostIdsReq = (
+  callBack: customRequestCallBack,
+  userId?: number
+) =>
+  userId
+    ? httpGet("/PostLike/GetUserLikePostIds", { userId }, callBack)
+    : httpGet("/PostLike/GetUserLikePostIds", {}, callBack);
 
 export const getUserLikePostListReq = (callBack: customRequestCallBack) =>
   httpGet("/PostLike/GetUserLikePostList", {}, callBack);
+
+export const getUsersLikeCountReq = (
+  userId: number,
+  callBack: customRequestCallBack
+) => httpGet("/PostLike/GetUsersLikeCount", { userId }, callBack);

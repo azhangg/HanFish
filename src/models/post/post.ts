@@ -1,3 +1,4 @@
+import type { UserType } from "@/models/user/user";
 export interface PostType {
   id: number;
   text: string;
@@ -19,4 +20,18 @@ export interface PostType {
     avatarUrl?: string;
     roleId: number;
   };
+}
+
+export interface CommentPostType {
+  id: number;
+  postId: number;
+  comment: string;
+  imgUrl?: string;
+  userId: number;
+  userName: string;
+  avatarUrl?: string;
+  pId: number;
+  createTime: Date;
+  puser?: UserType;
+  post: PostType;
 }

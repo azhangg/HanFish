@@ -4,6 +4,7 @@ export default interface GoodCardProps {
   tags: string[];
   description: string;
   price: number;
+  status: string;
   user: {
     id: number | string;
     avatarUrl?: string;

@@ -1,6 +1,7 @@
 import { loginReq, getUserInfoReq } from "@/apis/account";
 import Taro from "@tarojs/taro";
 import { useStore } from "@/stores";
+import { msg } from "@/utils/common";
 
 const getOpenId = () => Taro.getStorageSync("openid");
 
@@ -40,9 +41,20 @@ const requestUserInfo = (nextFn?: () => void) => {
   });
 };
 
+const checkLogin = () => {
+  const { accessToken, getUserInfo } = useStore();
+  if (getOpenId() && accessToken && getUserInfo) return true;
+  msg("请先登录");
+  setTimeout(() => {
+    Taro.navigateTo({
+      url: `/package/login/login`,
+    });
+  }, 1000);
+};
+
 export const useAccount = () => {
   const { accessToken, getUserInfo } = useStore();
   const isLogin = accessToken && getUserInfo;
 
-  return { getAccessToken, requestUserInfo, getOpenId, isLogin };
+  return { getAccessToken, requestUserInfo, getOpenId, checkLogin, isLogin };
 };

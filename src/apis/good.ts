@@ -14,6 +14,11 @@ export const getGoodsReq = (
 export const getGoodByIdReq = (id: number, callBack: customRequestCallBack) =>
   httpGet("/Good/GetGoodById", { id }, callBack);
 
+export const getUsersGoodReq = (
+  userId: number,
+  callBack: customRequestCallBack
+) => httpGet("/Good/GetUsersGood", { userId }, callBack);
+
 export const addGoodReq = (
   data: {
     description: string;
@@ -42,5 +47,5 @@ export const modifyGoodStatusReq = (
   callBack: customRequestCallBack
 ) => httpPost("/Good/UpdateGood", data, callBack);
 
-export const deleteGoodPriceReq = (id: number, callBack: (res) => void) =>
+export const deleteGoodReq = (id: number, callBack: (res) => void) =>
   httpPost("/Good/DeleteGood", { id }, callBack);

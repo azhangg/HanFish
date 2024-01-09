@@ -6,6 +6,7 @@ import { BASE_URL } from "@/utils/config";
 import { useStore } from "@/stores";
 import { storeToRefs } from "pinia";
 import Taro from "@tarojs/taro";
+import { goPage } from "@/utils/common";
 
 const { orders } = storeToRefs(useStore());
 
@@ -40,9 +41,7 @@ const orderNum = (status: number) => {
 };
 
 const onDealTap = (order: OrderType) => {
-  Taro.navigateTo({
-    url: `/package/user/deals/detail?orderId=${order.id}`,
-  });
+  goPage(`/package/user/deals/detail?orderId=${order.id}`);
 };
 
 Taro.useDidShow(() => {
@@ -72,9 +71,11 @@ Taro.useDidShow(() => {
       <nut-tabbar-item tab-title="已完成"> </nut-tabbar-item>
     </nut-tabbar>
     <view class="flex flex-col flex-gap-2 p-2">
-      <view v-if="deals.length === 0" class="text-#aaa text-center">
-        暂无交易
-      </view>
+      <nut-empty
+        v-if="deals.length === 0"
+        image="empty"
+        description="暂无交易"
+      ></nut-empty>
       <view
         v-for="deal in deals"
         class="flex p-2 flex-gap-3 text-#827171 rounded-2 shadow"
@@ -85,7 +86,9 @@ Taro.useDidShow(() => {
           :src="`${BASE_URL}/${deal.good.imgUrls[0]}`"
         />
         <view class="flex-1 flex flex-col justify-between">
-          <view class="description"> {{ deal.good.description }} </view>
+          <view class="description line-clamp-2">
+            {{ deal.good.description }}
+          </view>
           <view class="flex flex-row-reverse flex-gap-2 items-center p-2">
             <text class="font-bold c-#ff6b81">
               {{ statusStr(deal.status) }}

@@ -20,7 +20,7 @@ import moment from "moment";
 import { IconFont } from "@nutui/icons-vue-taro";
 import { nextTick } from "@tarojs/runtime";
 import { storeToRefs } from "pinia";
-import { msg } from "@/utils/common";
+import { goPage, msg } from "@/utils/common";
 import emojiJson from "@/assets/emoji.json";
 
 enum ChooseMode {
@@ -60,6 +60,8 @@ const uploadFileRef = ref();
 const fileList = ref<any[]>([]);
 
 const previewImgSrc = ref<{ src: string }[]>([]);
+
+const focusLock = ref(false);
 
 const collapseModel = ref(false);
 
@@ -196,6 +198,7 @@ const isShowTime = (index: number) => {
 
 const scrollToBottom = () =>
   nextTick(() => {
+    focusLock.value = true;
     Taro.pageScrollTo({
       selector: "#bottom",
       offsetTop: 0,
@@ -204,6 +207,9 @@ const scrollToBottom = () =>
         console.log("滚动失败", res);
       },
     });
+    setTimeout(() => {
+      focusLock.value = false;
+    }, 500);
   });
 
 const readSendChatMessageHandler = () => {
@@ -332,10 +338,7 @@ const onDeleteMessageTap = () => {
 
 const onMessageOfOrderTap = (orderInfo: string) => {
   const { id } = JSON.parse(orderInfo);
-  if (id)
-    Taro.navigateTo({
-      url: `/package/user/deals/detail?orderId=${id}`,
-    });
+  if (id) goPage(`/package/user/deals/detail?orderId=${id}`);
 };
 
 Taro.usePullDownRefresh(() => {
@@ -356,15 +359,15 @@ onBeforeMount(() => {
 });
 
 onMounted(() => {
+  focusLock.value = true;
   getChatMessageFormDataBase(userId, "");
   getEmojiList();
+  Taro.eventCenter.on("readSendChatMessage", readSendChatMessageHandler);
+  scrollToBottom();
   setTimeout(() => {
     readMsg();
+    focusLock.value = false;
   }, 1000);
-  Taro.eventCenter.on("readSendChatMessage", readSendChatMessageHandler);
-  nextTick(() => {
-    scrollToBottom();
-  });
 });
 
 onUnmounted(() => {
@@ -479,6 +482,7 @@ onUnmounted(() => {
           class="bg-#F5F3F2 c-#696a6d p-2 flex-1 rounded-3"
           v-model="message"
           :cursor-spacing="15"
+          :disabled="focusLock"
           placeholder="说点什么~"
           @tap.stop=""
         />

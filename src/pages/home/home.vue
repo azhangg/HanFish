@@ -7,7 +7,7 @@ import { LoadStatus } from "@/enums/index";
 import Taro from "@tarojs/taro";
 import { getGoodsReq } from "@/apis/good";
 import { getGoodCategoriesReq } from "@/apis/goodCategory";
-import { msg } from "@/utils/common";
+import { goPage, msg } from "@/utils/common";
 import { BASE_URL } from "@/utils/config";
 import { useEventCenter } from "@/hooks/useEvent";
 import { useStore } from "@/stores";
@@ -91,15 +91,11 @@ const handleLoadClick = () => {
 };
 
 const onGoodCardTap = (id: number) => {
-  Taro.navigateTo({
-    url: `/package/goods/detail/detail?id=${id}`,
-  });
+  goPage(`/package/goods/detail/detail?id=${id}`);
 };
 
 const onAddBtnTap = () => {
-  Taro.navigateTo({
-    url: "/package/goods/add/add",
-  });
+  goPage("/package/goods/add/add");
 };
 
 const getGoodList = () => {
@@ -201,6 +197,7 @@ onUnmounted(() => {
               :price="good.price"
               :tags="good.tags"
               :user="good.user"
+              :status="good.status"
               @tap="onGoodCardTap(good.id)"
             />
           </view>
@@ -213,6 +210,7 @@ onUnmounted(() => {
               :price="good.price"
               :tags="good.tags"
               :user="good.user"
+              :status="good.status"
               @tap="onGoodCardTap(good.id)"
             />
           </view>

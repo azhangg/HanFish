@@ -10,6 +10,20 @@
     "miniprogram": {
       "list": [
         {
+          "name": "package/user/personal/idleGood",
+          "pathName": "package/user/personal/idleGood",
+          "query": "userId=1023",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "package/user/personal/home",
+          "pathName": "package/user/personal/home",
+          "query": "userId=1023",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
           "name": "package/goods/appraise/appraise",
           "pathName": "package/goods/appraise/appraise",
           "query": "",

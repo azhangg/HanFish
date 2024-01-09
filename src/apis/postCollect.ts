@@ -11,8 +11,13 @@ export const deletePostCollectReq = (
   callBack: customRequestCallBack
 ) => httpPost("/PostCollect/DeletePostCollect", { postId }, callBack);
 
-export const getUserCollectPostIdsReq = (callBack: customRequestCallBack) =>
-  httpGet("/PostCollect/GetUserCollectPostIds", {}, callBack);
+export const getUserCollectPostIdsReq = (
+  callBack: customRequestCallBack,
+  userId?: number
+) =>
+  userId
+    ? httpGet("/PostCollect/GetUserCollectPostIds", { userId }, callBack)
+    : httpGet("/PostCollect/GetUserCollectPostIds", {}, callBack);
 
 export const getUserCollectPostListReq = (callBack: customRequestCallBack) =>
   httpGet("/PostCollect/GetUserCollectPostList", {}, callBack);

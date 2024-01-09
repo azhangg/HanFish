@@ -6,7 +6,7 @@ import { ref, onBeforeMount } from "vue";
 import Taro from "@tarojs/taro";
 import { BASE_URL } from "@/utils/config";
 import { useStore } from "@/stores";
-import { msg, pcaSplit } from "@/utils/common";
+import { goPage, msg, pcaSplit } from "@/utils/common";
 import { getAddressReq } from "@/apis/address";
 import { addChatMessageReq } from "@/apis/chatMessage";
 import {
@@ -89,11 +89,11 @@ const getUsersAddress = () => {
 };
 
 const onGoPayClick = () => {
-  Taro.navigateTo({
-    url: `/package/goods/order/pay?orderInfo=${encodeURI(
+  goPage(
+    `/package/goods/order/pay?orderInfo=${encodeURI(
       JSON.stringify(order.value)
-    )}`,
-  });
+    )}`
+  );
 };
 
 const onChooseAddressClose = ({ type, data }) => {
@@ -125,15 +125,12 @@ const onChooseAddressClose = ({ type, data }) => {
 };
 
 const onChooseOtherAddressClick = () => {
-  Taro.navigateTo({
-    url: "/package/user/receivingAddress/add",
-    events: {
-      acceptDataFromOpenedPage: (res) => {
-        existAddress.value.forEach((item) => {
-          item.selectedAddress = false;
-        });
-        existAddress.value.push(res);
-      },
+  goPage("/package/user/receivingAddress/add", {
+    acceptDataFromOpenedPage: (res) => {
+      existAddress.value.forEach((item) => {
+        item.selectedAddress = false;
+      });
+      existAddress.value.push(res);
     },
   });
 };
@@ -193,11 +190,11 @@ const onReceiveConfirm = () => {
 };
 
 const onGoAppraiseClick = () => {
-  Taro.navigateTo({
-    url: `/package/goods/appraise/appraise?orderInfo=${encodeURI(
+  goPage(
+    `/package/goods/appraise/appraise?orderInfo=${encodeURI(
       JSON.stringify(order.value)
-    )}`,
-  });
+    )}`
+  );
 };
 
 const onCancelOrderClick = () => {

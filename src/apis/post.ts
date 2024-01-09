@@ -18,3 +18,23 @@ export const getPostByIdReq = (
   postId: number,
   callBack: customRequestCallBack
 ) => httpGet("/Post/GetPostById", { postId }, callBack);
+
+export const getPostsByUserIdReq = (
+  userId: number,
+  callBack: customRequestCallBack
+) => httpGet("/Post/GetPostListByUserId", { userId }, callBack);
+
+export const getUserCollectedPostsReq = (
+  userId: number,
+  callBack: customRequestCallBack
+) => httpGet("/Post/GetCollectedPostsByUserId", { userId }, callBack);
+
+export const getUserLikedPostsReq = (
+  userId: number,
+  callBack: customRequestCallBack
+) => httpGet("/Post/GetLikedPostsByUserId", { userId }, callBack);
+
+export const getUserCommentedPostsReq = (
+  userId: number,
+  callBack: customRequestCallBack
+) => httpGet("/Post/GetCommentedPostsByUserId", { userId }, callBack);

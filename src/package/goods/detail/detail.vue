@@ -5,17 +5,25 @@ import Taro from "@tarojs/taro";
 import { computed } from "vue";
 import { reactive, ref } from "vue";
 import { onMounted } from "vue";
-import { getGoodByIdReq } from "@/apis/good";
-import { loading, msg } from "@/utils/common";
+import {
+  getGoodByIdReq,
+  modifyGoodPriceReq,
+  modifyGoodStatusReq,
+} from "@/apis/good";
+import { loading, msg, goPage } from "@/utils/common";
 import { BASE_URL, DEFAULT_AVATAR } from "@/utils/config";
 import { useStore } from "@/stores";
 import { useAccount } from "@/hooks/useAccount";
 
 const { userInfo, addChatMessageRow } = useStore();
 
-const { getOpenId, isLogin } = useAccount();
+const { checkLogin, getOpenId } = useAccount();
 
 const goodId = parseInt(Taro.getCurrentInstance().router?.params?.id ?? "0");
+
+const dialogVisible = ref(false);
+
+const changingPrice = ref(0);
 
 const goodInfo = ref<GoodType>();
 
@@ -53,8 +61,8 @@ const getGoodInfo = () => {
 };
 
 const onTalkInPrivateClick = () => {
-  const openid = getOpenId();
-  if (openid && isLogin) {
+  if (checkLogin()) {
+    const openid = getOpenId();
     addChatMessageRow([
       {
         targetInfo: {
@@ -67,30 +75,20 @@ const onTalkInPrivateClick = () => {
         chatMessages: [],
       },
     ]);
-    Taro.navigateTo({
-      url: `/package/chats/chat/chat?targetId=${goodInfo.value?.user.id}`,
-    });
-  } else {
-    msg("请先登录");
-    setTimeout(() => {
-      Taro.navigateTo({
-        url: `/package/login/login`,
-      });
-    }, 1000);
+    goPage(`/package/chats/chat/chat?targetId=${goodInfo.value?.user.id}`);
   }
 };
 
 const onPlaceOrderClick = () => {
-  const openid = getOpenId();
-  if (openid && isLogin) {
+  if (checkLogin()) {
     getGoodByIdReq(goodInfo.value?.id ?? 0, (res) => {
       const { isSuccess, data } = res.data;
       if (isSuccess && data.status == "未交易") {
-        Taro.navigateTo({
-          url: `/package/goods/order/confirm?goodId=${
+        goPage(
+          `/package/goods/order/confirm?goodId=${
             goodInfo.value?.id
-          }&goodInfo=${encodeURI(JSON.stringify(goodInfo?.value))}`,
-        });
+          }&goodInfo=${encodeURI(JSON.stringify(goodInfo?.value))}`
+        );
       } else {
         msg("来晚了，已被别的客官抢先一步");
         Taro.eventCenter.trigger("homeRefreshData");
@@ -101,22 +99,57 @@ const onPlaceOrderClick = () => {
         }, 1000);
       }
     });
-  } else {
-    msg("请先登录");
-    setTimeout(() => {
-      Taro.navigateTo({
-        url: `/package/login/login`,
-      });
-    }, 1000);
   }
 };
 
 const onShowOrderClick = () => {
   const order = useStore().orders.find((o) => o.goodId === goodId);
   if (order) {
-    Taro.navigateTo({
-      url: `/package/user/deals/detail?orderId=${order.id}`,
-    });
+    goPage(`/package/user/deals/detail?orderId=${order.id}`);
+  }
+};
+
+const onChangePriceClick = () => {
+  changingPrice.value = goodInfo.value?.price ?? 0;
+  dialogVisible.value = true;
+};
+
+const onOffShelfClick = () => {
+  modifyGoodStatusReq({ id: goodId, status: 4 }, (res) => {
+    const { isSuccess } = res.data;
+    if (isSuccess) {
+      msg("下架成功");
+      Taro.eventCenter.trigger("homeRefreshData");
+      setTimeout(() => {
+        Taro.switchTab({
+          url: "/pages/home/home",
+        });
+      }, 1000);
+    }
+  });
+};
+
+const onChangePriceConfirm = () => {
+  let priceString = changingPrice.value as unknown as string;
+  priceString = parseFloat(priceString).toFixed(2);
+  const price = parseFloat(priceString);
+  modifyGoodPriceReq({ id: goodId, price: price }, (res) => {
+    const { isSuccess } = res.data;
+    if (isSuccess) {
+      msg("修改成功");
+      Taro.eventCenter.trigger("homeRefreshData");
+      setTimeout(() => {
+        Taro.switchTab({
+          url: "/pages/home/home",
+        });
+      }, 1000);
+    }
+  });
+};
+
+const onUserInfoTap = () => {
+  if (checkLogin()) {
+    goPage(`/package/user/personal/home?userId=${goodInfo.value?.userId}`);
   }
 };
 
@@ -158,7 +191,7 @@ onMounted(() => {
       </view>
     </view>
     <view class="bottom-plane">
-      <view class="flex flex-gap-2 items-center">
+      <view class="flex flex-gap-2 items-center" @tap="onUserInfoTap">
         <nut-avatar size="small">
           <img
             :src="`${BASE_URL}/${goodInfo?.user.avatarUrl ?? DEFAULT_AVATAR}`"
@@ -195,12 +228,32 @@ onMounted(() => {
         </nut-button>
       </view>
       <view v-else class="flex flex-gap-2">
-        <nut-button plain type="primary" size="small" @click="">
+        <nut-button
+          plain
+          type="primary"
+          size="small"
+          @click="onChangePriceClick"
+        >
           改价
         </nut-button>
-        <nut-button type="primary" size="small">下架</nut-button>
+        <nut-button type="primary" size="small" @click="onOffShelfClick">
+          下架
+        </nut-button>
       </view>
     </view>
+    <nut-dialog
+      title="修改价格"
+      v-model:visible="dialogVisible"
+      @cancel="dialogVisible = false"
+      @ok="onChangePriceConfirm"
+    >
+      <nut-input
+        placeholder="请输入价格"
+        v-model="changingPrice"
+        type="digit"
+        max-length="13"
+      />
+    </nut-dialog>
   </view>
 </template>
 <style lang="scss">

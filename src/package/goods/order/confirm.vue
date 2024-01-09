@@ -6,7 +6,7 @@ import { onBeforeMount, ref } from "vue";
 import Taro from "@tarojs/taro";
 import { BASE_URL } from "@/utils/config";
 import { getAddressReq } from "@/apis/address";
-import { pcaSplit, msg } from "@/utils/common";
+import { pcaSplit, msg, goPage } from "@/utils/common";
 import { getGoodByIdReq } from "@/apis/good";
 import { addOrderReq } from "@/apis/order";
 import { useStore } from "@/stores";
@@ -66,16 +66,13 @@ const getUsersAddress = () => {
 };
 
 const onChooseOtherAddressClick = () => {
-  Taro.navigateTo({
-    url: "/package/user/receivingAddress/add",
-    events: {
-      acceptDataFromOpenedPage: (res) => {
-        address.value = res;
-        existAddress.value.forEach((item) => {
-          item.selectedAddress = false;
-        });
-        existAddress.value.push(res);
-      },
+  goPage("/package/user/receivingAddress/add", {
+    acceptDataFromOpenedPage: (res) => {
+      address.value = res;
+      existAddress.value.forEach((item) => {
+        item.selectedAddress = false;
+      });
+      existAddress.value.push(res);
     },
   });
 };
@@ -123,11 +120,11 @@ const onSubmitOrderClick = () => {
                 }
               }
             );
-            Taro.navigateTo({
-              url: `/package/goods/order/pay?orderInfo=${encodeURI(
+            goPage(
+              `/package/goods/order/pay?orderInfo=${encodeURI(
                 JSON.stringify(data)
-              )}`,
-            });
+              )}`
+            );
           }
         }
       );

@@ -8,7 +8,7 @@ import {
   deleteAddressReq,
 } from "@/apis/address";
 import Taro from "@tarojs/taro";
-import { msg } from "@/utils/common";
+import { goPage, msg } from "@/utils/common";
 
 let addressId = 0;
 
@@ -48,9 +48,9 @@ const onSetDefaultTap = (address: any) => {
 };
 
 const onEditClick = (_, item) => {
-  Taro.navigateTo({
-    url: `/package/user/receivingAddress/edit?id=${item.id}&name=${item.addressName}&contactNum=${item.phone}&deliveryAddress=${item.fullAddress}`,
-  });
+  goPage(
+    `/package/user/receivingAddress/edit?id=${item.id}&name=${item.addressName}&contactNum=${item.phone}&deliveryAddress=${item.fullAddress}`
+  );
 };
 
 const onDelClick = (_, item) => {
@@ -80,11 +80,7 @@ Taro.useDidShow(() => {
       swipe-edition
       @del-icon="onDelClick"
       @edit-icon="onEditClick"
-      @add="
-        Taro.navigateTo({
-          url: '/package/user/receivingAddress/add',
-        })
-      "
+      @add="goPage('/package/user/receivingAddress/add')"
       :data-options="dataOptions"
     >
       <template #swipe-right="{ item }">
