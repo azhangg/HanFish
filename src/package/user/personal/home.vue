@@ -3,7 +3,7 @@ import type { UserType } from "@/models/user/user";
 import type { PostType } from "@/models/post/post";
 import type { GoodAppraiseType } from "@/models/good/goodAppraise";
 
-import { ref, onBeforeMount, computed } from "vue";
+import { ref, onBeforeMount } from "vue";
 import { BASE_URL } from "@/utils/config";
 import { getUserInfoByUserIdReq } from "@/apis/user";
 import Taro from "@tarojs/taro";
@@ -14,16 +14,13 @@ import {
   getUserCollectedPostsReq,
   getUserLikedPostsReq,
   deletePostReq,
+  getUserCommunityDataReq,
 } from "@/apis/post";
 import {
   deletePostCollectReq,
   getUserCollectPostIdsReq,
 } from "@/apis/postCollect";
-import {
-  deletePostLikeReq,
-  getUserLikePostIdsReq,
-  getUsersLikeCountReq,
-} from "@/apis/postLike";
+import { deletePostLikeReq, getUserLikePostIdsReq } from "@/apis/postLike";
 import { getGoodAppraisesReq } from "@/apis/goodAppraise";
 
 import { IconFont } from "@nutui/icons-vue-taro";
@@ -42,8 +39,6 @@ const operatingPostId = ref(0);
 
 const postsNum = ref(0);
 
-const bePraiseNum = ref(0);
-
 const overlayVisible = ref(false);
 
 const lock = ref(true);
@@ -54,6 +49,13 @@ const collects = ref<number[]>([]);
 
 const likes = ref<number[]>([]);
 
+const communityData = ref({
+  appraiseNum: 0,
+  postNum: 0,
+  bePraiseNum: 0,
+  collectNum: 0,
+});
+
 const goodAppraises = ref<GoodAppraiseType[]>([]);
 
 const user = ref<UserType>({
@@ -63,10 +65,6 @@ const user = ref<UserType>({
   roleId: 3,
   createTime: new Date(),
 });
-
-const appraiseNum = computed(() => goodAppraises.value.length);
-
-const collectsNum = computed(() => collects.value.length);
 
 const getUserInfo = (success?: () => void) => {
   getUserInfoByUserIdReq(userId.value, (res) => {
@@ -115,8 +113,18 @@ const getPersonalInfo = (active: number) => {
       });
       break;
   }
-  getCollects();
   getLikes();
+  getCollects();
+  getUserCommunityData();
+};
+
+const getUserCommunityData = () => {
+  getUserCommunityDataReq(userId.value, (res) => {
+    const { isSuccess, data } = res.data;
+    if (isSuccess) {
+      communityData.value = data;
+    }
+  });
 };
 
 const getCollects = () => {
@@ -135,15 +143,6 @@ const getLikes = () => {
       likes.value = data;
     }
   }, userId.value);
-};
-
-const getUsersLikeCount = () => {
-  getUsersLikeCountReq(user.value.id, (res) => {
-    const { isSuccess, data } = res.data;
-    if (isSuccess) {
-      bePraiseNum.value = data;
-    }
-  });
 };
 
 const onTabSwitch = (_, index) => {
@@ -188,6 +187,7 @@ const onDeleteMessageTap = () => {
       });
       break;
   }
+  getUserCommunityData();
   overlayVisible.value = false;
 };
 
@@ -219,10 +219,7 @@ onBeforeMount(() => {
       }主页`,
     });
     lock.value = false;
-    getPersonalInfo(0); //获取交易数量要用
-    getPersonalInfo(1); //获取帖子数量要用
     getPersonalInfo(active.value);
-    getUsersLikeCount();
   });
 });
 </script>
@@ -244,19 +241,19 @@ onBeforeMount(() => {
         <view class="flex flex-gap-2 justify-around text-#827171 text-28">
           <view class="flex flex-col flex-gap-1 text-center">
             <view>交易</view>
-            <text>{{ appraiseNum }}</text>
+            <text>{{ communityData.appraiseNum }}</text>
           </view>
           <view class="flex flex-col flex-gap-1 text-center">
             <view>帖子</view>
-            <text>{{ postsNum }}</text>
+            <text>{{ communityData.postNum }}</text>
           </view>
           <view class="flex flex-col flex-gap-1 text-center">
             <view>获赞</view>
-            <text>{{ bePraiseNum }}</text>
+            <text>{{ communityData.bePraiseNum }}</text>
           </view>
           <view class="flex flex-col flex-gap-1 text-center">
             <view>收藏</view>
-            <text>{{ collectsNum }}</text>
+            <text>{{ communityData.collectNum }}</text>
           </view>
         </view>
         <nut-button

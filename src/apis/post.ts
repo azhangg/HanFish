@@ -38,3 +38,8 @@ export const getUserCommentedPostsReq = (
   userId: number,
   callBack: customRequestCallBack
 ) => httpGet("/Post/GetCommentedPostsByUserId", { userId }, callBack);
+
+export const getUserCommunityDataReq = (
+  userId: number,
+  callBack: customRequestCallBack
+) => httpGet("/Post/GetUserCommunityData", { userId }, callBack);

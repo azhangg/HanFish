@@ -138,6 +138,9 @@ const getGoodCategories = () => {
     }
   });
 };
+
+const formatter = (value) => value.replace(/^(0|\.)+/g, "");
+
 onMounted(() => {
   getGoodCategories();
 });
@@ -180,6 +183,8 @@ onMounted(() => {
         v-model="good.price"
         type="digit"
         max-length="13"
+        :formatter="formatter"
+        format-trigger="onChange"
       />
     </view>
     <view class="tags">

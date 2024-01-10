@@ -42,6 +42,8 @@ const swiperState = reactive({
   current: 1,
 });
 
+const formatter = (value) => value.replace(/^(0|\.)+/g, "");
+
 const swiperChange = (index) => {
   swiperState.page = index;
   swiperState.current = index + 1;
@@ -252,6 +254,8 @@ onMounted(() => {
         v-model="changingPrice"
         type="digit"
         max-length="13"
+        :formatter="formatter"
+        format-trigger="onChange"
       />
     </nut-dialog>
   </view>
