@@ -4,6 +4,8 @@ import type {
   TargetInfoType,
 } from "@/models/message/chatMessage";
 import type { OrderType } from "@/models/good/order";
+import type { PostType } from "@/models/post/post";
+import type { PostCommentType } from "@/models/post/postComment";
 
 import { onBeforeMount, onMounted, onUnmounted, ref, computed } from "vue";
 import Taro from "@tarojs/taro";
@@ -15,6 +17,8 @@ import {
   withDrawMessageReq,
   refuseMessageReq,
 } from "@/apis/chatMessage";
+import { getUserLikePostIdsReq } from "@/apis/postLike";
+import { getUserCollectPostIdsReq } from "@/apis/postCollect";
 import { BASE_URL, PICTURE_ICON } from "@/utils/config";
 import moment from "moment";
 import { IconFont } from "@nutui/icons-vue-taro";
@@ -87,6 +91,10 @@ const overlayVisible = ref(false);
 
 const emojiIndex = ref(0);
 
+const collects = ref<number[]>([]);
+
+const likes = ref<number[]>([]);
+
 const emojisList = ref<{ title: string; emojis: string[] }[]>([]);
 
 const chooseMode = ref(ChooseMode.其它);
@@ -133,6 +141,15 @@ const getTargetInfo = () => {
       });
     });
   }
+};
+
+const communityMessage = (jsonContent: string) => {
+  const content: {
+    postInfo: PostType;
+    comment: PostCommentType;
+    receiveComment?: PostCommentType;
+  } = JSON.parse(jsonContent);
+  return content;
 };
 
 const getChatMessageFormDataBase = (targetId: number, time: string) => {
@@ -341,6 +358,29 @@ const onMessageOfOrderTap = (orderInfo: string) => {
   if (id) goPage(`/package/user/deals/detail?orderId=${id}`);
 };
 
+const CommunityMessageTap = async (content: string) => {
+  const data = communityMessage(content);
+  await getUserLikePostIdsReq((res) => {
+    const { isSuccess, data } = res.data;
+    if (isSuccess) {
+      likes.value = data;
+    }
+  });
+  await getUserCollectPostIdsReq((res) => {
+    const { isSuccess, data } = res.data;
+    if (isSuccess) {
+      collects.value = data;
+    }
+  });
+  goPage(
+    `/package/post/detail/detail?id=${
+      data.postInfo.id
+    }&isCollect=${collects.value.includes(
+      data.postInfo.id
+    )}&isLike=${likes.value.includes(data.postInfo.id)}`
+  );
+};
+
 Taro.usePullDownRefresh(() => {
   if (chatMessageList.value.length > 0 && !oldesttFlag) {
     getChatMessageFormDataBase(
@@ -455,6 +495,47 @@ onUnmounted(() => {
         >
           {{ message.isRead ? "已读" : "未读" }}
         </view>
+        <view
+          v-else-if="message.type === 5"
+          class="flex flex-col flex-gap-2"
+          @tap="CommunityMessageTap(message.content)"
+        >
+          <view class="flex w-500 pl-2 pr-2 flex-gap-2 items-center rounded-1">
+            <image
+              v-if="communityMessage(message.content).comment.avatarUrl"
+              style="height: 50rpx; width: 50rpx; border-radius: 25rpx"
+              :src="`${BASE_URL}/${
+                communityMessage(message.content).comment.avatarUrl
+              }`"
+            />
+            <view class="line-clamp-3">
+              {{ communityMessage(message.content).comment.userName }}
+            </view>
+          </view>
+          <view class="w-500 p2 bg-black/5 rounded-1">
+            <view class="line-clamp-3">
+              {{ `${communityMessage(message.content).postInfo.text}` }}
+            </view>
+          </view>
+          <view class="flex flex-wrap flex-gap-2 w-500 pl-2 pr-2 rounded-1">
+            <nut-tag
+              v-if="communityMessage(message.content).receiveComment"
+              type="success"
+            >
+              回复
+            </nut-tag>
+            <nut-tag v-else type="warning"> 评论 </nut-tag>
+            <text
+              v-if="communityMessage(message.content).receiveComment"
+              class="p-1 bg-black/5 rounded-2 text-24"
+            >
+              我：{{
+                communityMessage(message.content).receiveComment?.comment ?? ""
+              }}
+            </text>
+            ：{{ communityMessage(message.content).comment.comment }}
+          </view>
+        </view>
       </view>
     </view>
     <view id="bottom"></view>
@@ -463,7 +544,7 @@ onUnmounted(() => {
       class="cover-input"
       @tap="onInputCoverTap"
     ></view>
-    <view class="bottom-fixed">
+    <view v-if="targetInfo.id != 0" class="bottom-fixed">
       <nut-uploader
         ref="uploadFileRef"
         class="upload"

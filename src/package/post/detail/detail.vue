@@ -16,6 +16,7 @@ import Comment from "@/components/community/comment.vue";
 import { useAccount } from "@/hooks/useAccount";
 import { addPostCollectReq, deletePostCollectReq } from "@/apis/postCollect";
 import { addPostLikeReq, deletePostLikeReq } from "@/apis/postLike";
+import { addChatMessageReq } from "@/apis/chatMessage";
 import { useStore } from "@/stores";
 
 import icon_like from "@/assets/icon/ico_likes.png";
@@ -122,15 +123,54 @@ const getPostComments = (postId: number) => {
   });
 };
 
+const sendCommunityMessage = (comment: PostCommentType) => {
+  comment.avatarUrl = useStore().userInfo.avatarUrl;
+  comment.userName = useStore().userInfo.name;
+  if (comment.pId == 0) {
+    if (useStore().userInfo.id != postInfo.value.publisherId)
+      addChatMessageReq(
+        {
+          senderId: 0,
+          receiverId: postInfo.value.publisherId,
+          content: JSON.stringify({
+            postInfo: postInfo.value,
+            comment: comment,
+          }),
+          type: 5,
+        },
+        (_) => {}
+      );
+  } else {
+    const receiverComment = comments.value.find((c) => c.id === comment.pId);
+    if (receiverComment)
+      addChatMessageReq(
+        {
+          senderId: 0,
+          receiverId: receiverComment.userId,
+          content: JSON.stringify({
+            postInfo: postInfo.value,
+            comment: comment,
+            receiveComment: receiverComment,
+          }),
+          type: 5,
+        },
+        (_) => {}
+      );
+  }
+};
+
 const getActionSheetItems = () => {
-  const items = [{ name: "回复" }];
+  const items: { name: string }[] = [];
+  if (useStore().userInfo.id != currentUserId.value)
+    items.push({ name: "回复" });
   if (useStore().userInfo.id === currentUserId.value)
     items.push({ name: "删除" });
   return items;
 };
 
 const addComment = () => {
-  if (!comment.value) {
+  if (!comment.value || comment.value.trim() === "") {
+    comment.value = "";
     msg("请输入评论");
     return;
   }
@@ -145,7 +185,7 @@ const addComment = () => {
       pId: currentCommentId.value,
     },
     (res) => {
-      const { isSuccess } = res.data;
+      const { isSuccess, data } = res.data;
       if (isSuccess) {
         getPostComments(postInfo.value.id);
         postInfo.value.comments += 1;
@@ -153,6 +193,9 @@ const addComment = () => {
         fileList.value = [];
         inputFocus.value = false;
         inputRef.value.blur();
+
+        //社区消息
+        sendCommunityMessage(data);
       }
       currentCommentId.value = 0;
     }
@@ -236,8 +279,7 @@ const onCommentLonePress = (comment: PostCommentType) => {
   currentUserId.value = comment.userId;
 };
 
-const onActionSheetChoose = (item) => {
-  const { name } = item;
+const onActionSheetChoose = ({ name }) => {
   switch (name) {
     case "回复":
       inputRef.value.focus();

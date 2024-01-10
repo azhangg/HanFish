@@ -12,6 +12,7 @@ import { BASE_URL } from "@/utils/config";
 import { useEventCenter } from "@/hooks/useEvent";
 import { useStore } from "@/stores";
 import { storeToRefs } from "pinia";
+import "@/hooks/useUpdate";
 
 useEventCenter();
 
@@ -91,7 +92,11 @@ const handleLoadClick = () => {
 };
 
 const onGoodCardTap = (id: number) => {
-  goPage(`/package/goods/detail/detail?id=${id}`);
+  goPage(`/package/goods/detail/detail?id=${id}`, {
+    acceptDataFromGoodDetail: () => {
+      getGoodList();
+    },
+  });
 };
 
 const onAddBtnTap = () => {

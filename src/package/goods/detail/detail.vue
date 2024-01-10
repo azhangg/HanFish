@@ -54,7 +54,21 @@ const getGoodInfo = () => {
   getGoodByIdReq(goodId, (res) => {
     const { isSuccess, data, message } = res.data;
     if (isSuccess) {
-      goodInfo.value = data;
+      if (data) {
+        goodInfo.value = data;
+      } else {
+        msg("该物品不存在");
+        const eventChannel =
+          Taro.getCurrentPages()[
+            Taro.getCurrentPages().length - 1
+          ]?.getOpenerEventChannel();
+        if (eventChannel) {
+          eventChannel.emit("acceptDataFromGoodDetail");
+        }
+        setTimeout(() => {
+          Taro.navigateBack();
+        }, 1000);
+      }
       Taro.hideLoading();
     } else {
       msg(message);

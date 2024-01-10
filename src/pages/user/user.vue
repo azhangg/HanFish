@@ -63,6 +63,8 @@ const { userInfo, getUserInfo, orders } = storeToRefs(useStore());
 const { getOpenId, getAccessToken, requestUserInfo, checkLogin } = useAccount();
 const { refreshUnReadMsgNum, clearCache, loginOut } = useStore();
 
+const miniProgramInfo = Taro.getAccountInfoSync().miniProgram;
+
 const dialogVisible = ref(false);
 
 const orderNum = (status: number) => {
@@ -209,7 +211,8 @@ Taro.useDidShow(() => {
         >退出登录</nut-button
       >
       <view class="flex justify-center text-#827171 text-26">
-        version：dev
+        version：
+        {{ `${miniProgramInfo.envVersion} ${miniProgramInfo.version}` }}
       </view>
     </view>
     <nut-dialog

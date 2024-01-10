@@ -8,6 +8,8 @@ import { useStore } from "@/stores";
 import { storeToRefs } from "pinia";
 import moment from "moment";
 import { goPage } from "@/utils/common";
+import { PostType } from "@/models/post/post";
+import { PostCommentType } from "@/models/post/postComment";
 
 const { readyChatMessages, userInfo } = storeToRefs(useStore());
 
@@ -37,7 +39,16 @@ const convertMessageContent = (message: ChatMessageRowType) => {
     return `${
       msg.senderId === userInfo.value.id ? "您" : "对方"
     }撤回了一条消息`;
-  else return "";
+  else if (msg.type === 5) {
+    const content: {
+      postInfo: PostType;
+      comment: PostCommentType;
+      receiveComment?: PostCommentType;
+    } = JSON.parse(msg.content);
+    return `[${content.receiveComment ? "回复" : "评论"}消息]：${
+      content.comment.comment
+    }`;
+  } else return "";
 };
 
 const userUnreadNum = (message: ChatMessageRowType) => {

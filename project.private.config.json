@@ -10,36 +10,8 @@
     "miniprogram": {
       "list": [
         {
-          "name": "package/user/personal/idleGood",
-          "pathName": "package/user/personal/idleGood",
-          "query": "userId=1023",
-          "launchMode": "default",
-          "scene": null
-        },
-        {
-          "name": "package/user/personal/home",
-          "pathName": "package/user/personal/home",
-          "query": "userId=1023",
-          "launchMode": "default",
-          "scene": null
-        },
-        {
-          "name": "package/goods/appraise/appraise",
-          "pathName": "package/goods/appraise/appraise",
-          "query": "",
-          "launchMode": "default",
-          "scene": null
-        },
-        {
-          "name": "package/goods/order/detail",
-          "pathName": "package/goods/order/detail",
-          "query": "orderInfo=%257B%2522id%2522%3A3%2C%2522code%2522%3A%2522HXY20240104170734477%2522%2C%2522deliveryAddress%2522%3A%2522%25E5%25B9%25BF%25E4%25B8%259C%25E7%259C%2581%25E5%25B9%25BF%25E5%25B7%259E%25E5%25B8%2582%25E5%25A4%25A9%25E6%25B2%25B3%25E5%258C%25BA%25E5%25A4%25A9%25E6%25B2%25B3%25E5%25A4%25A7%25E9%2581%2593%25E4%25B8%25AD131%25E5%258F%25B7%2522%2C%2522goodId%2522%3A1007%2C%2522userId%2522%3A1023%2C%2522status%2522%3A1%2C%2522createTime%2522%3A%25222024-01-04T17%3A07%3A34.3277001%2522%2C%2522good%2522%3A%257B%2522id%2522%3A1007%2C%2522description%2522%3A%2522%25E5%258C%2585%25E5%258C%2585%2522%2C%2522imgUrls%2522%3A%255B%2522Files%2FWebResource%2F20231230%2F20231230120121_C577EBD2-3838-470F-9D5D-BDA85544D497.jpg%2522%2C%2522Files%2FWebResource%2F20231230%2F20231230120126_4E9E64BE-40FD-4CC5-BBAD-3BE0A8E44E29.jpg%2522%2C%2522Files%2FWebResource%2F20231230%2F20231230120130_7EB81E36-29C4-4954-B004-194F47D318FD.jpg%2522%255D%2C%2522price%2522%3A999%2C%2522tags%2522%3A%255B%252298%25E6%2588%2590%25E6%2596%25B0%2522%2C%2522%25E5%258F%25A4%25E9%25A9%25B0%2522%2C%2522%25E7%2588%25B1%25E9%25A9%25AC%25E4%25BB%2595%2522%255D%2C%2522status%2522%3A%2522%25E6%259C%25AA%25E4%25BA%25A4%25E6%2598%2593%2522%2C%2522createTime%2522%3A%25222023-12-30T12%3A02%3A02.4348546%2522%2C%2522categoryId%2522%3A1%2C%2522userId%2522%3A3024%2C%2522category%2522%3Anull%2C%2522user%2522%3Anull%257D%2C%2522user%2522%3A%257B%2522id%2522%3A1023%2C%2522name%2522%3A%2522%25E1%2591%258B%25E1%25B5%2589%25E1%2591%258A%25E1%2591%258A%25E1%25B5%2592%2522%2C%2522email%2522%3Anull%2C%2522loginName%2522%3A%2522oLH_-5EErU8vSS1sBIhH2WsV2jKw%2522%2C%2522createTime%2522%3A%25222023-11-24T16%3A41%3A09.2225872%2522%2C%2522avatarUrl%2522%3A%2522Files%2FUserProfile%2F20231124%2F20231124164106_91425E44-28E8-4923-A8E0-775D43BD18C5.jpg%2522%2C%2522roleId%2522%3A3%257D%257D",
-          "launchMode": "default",
-          "scene": null
-        },
-        {
-          "name": "package/user/deals/deals",
-          "pathName": "package/user/deals/deals",
+          "name": "pages/home/home",
+          "pathName": "pages/home/home",
           "query": "",
           "launchMode": "default",
           "scene": null
