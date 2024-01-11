@@ -41,7 +41,9 @@ const TaskHandler = (socket: Taro.SocketTask) => {
     const { code } = res;
     if (code === 1006) {
       reconnect = true;
-      console.log("连接异常关闭，正在尝试重新连接...");
+      console.log("服务器异常关闭，正在尝试重新连接...");
+    } else if (code === 1000) {
+      console.log("连接正常关闭", res);
     } else {
       reconnect = true;
       console.log("连接关闭", res);
@@ -57,4 +59,8 @@ export const startSocketTask = () => {
     const { connectionToken } = res.data;
     getSocketTask(connectionToken).then(TaskHandler);
   });
+};
+
+export const stopSocketTask = () => {
+  Taro.closeSocket();
 };

@@ -102,8 +102,8 @@ const onLoginTap = () => {
                   data: data.openId,
                 });
                 getAccessToken(data.openId);
-                Taro.eventCenter.trigger("login");
                 getUserInfo.value = true;
+                Taro.eventCenter.trigger("login");
                 Taro.hideLoading();
                 Taro.showToast({
                   title: "登录成功",

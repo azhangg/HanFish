@@ -110,11 +110,11 @@ export const useStore = defineStore("store", {
         state.accessToken = "";
         state.chatMessages = [];
         state.orders = [];
-      });
-      Taro.clearStorageSync();
-      this.clearUserInfo();
-      Taro.redirectTo({
-        url: "/package/login/login",
+        Taro.clearStorageSync();
+        this.clearUserInfo();
+        Taro.redirectTo({
+          url: "/package/login/login",
+        });
       });
     },
     clearCache() {

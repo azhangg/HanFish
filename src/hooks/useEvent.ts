@@ -70,20 +70,19 @@ const SendMessageHandler = (e) => {
   addChatMessageRow([{ targetInfo, chatMessages }]);
 };
 
-const events: { [key: string]: any } = {
-  login: loginEventHandler,
-  unReadChatsUpdate: unReadChatsUpdateHandler,
-  ChatMessageRead: ChatMessageReadHandler,
-  SendMessage: SendMessageHandler,
-};
-//应用事件
-Taro.eventCenter.on("login", loginEventHandler);
-Taro.eventCenter.on("unReadChatsUpdate", unReadChatsUpdateHandler);
-//服务器事件
-Taro.eventCenter.on("ChatMessageRead", ChatMessageReadHandler);
-Taro.eventCenter.on("SendMessage", SendMessageHandler);
-
 export const useEventCenter = () => {
+  const events: { [key: string]: any } = {
+    login: loginEventHandler,
+    unReadChatsUpdate: unReadChatsUpdateHandler,
+    ChatMessageRead: ChatMessageReadHandler,
+    SendMessage: SendMessageHandler,
+  };
+  //应用事件
+  Taro.eventCenter.on("login", loginEventHandler);
+  Taro.eventCenter.on("unReadChatsUpdate", unReadChatsUpdateHandler);
+  //服务器事件
+  Taro.eventCenter.on("ChatMessageRead", ChatMessageReadHandler);
+  Taro.eventCenter.on("SendMessage", SendMessageHandler);
   return {
     events,
   };

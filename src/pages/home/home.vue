@@ -14,8 +14,6 @@ import { useStore } from "@/stores";
 import { storeToRefs } from "pinia";
 import "@/hooks/useUpdate";
 
-useEventCenter();
-
 const { readyChatMessages } = storeToRefs(useStore());
 
 const { refreshUnReadMsgNum } = useStore();
@@ -148,6 +146,7 @@ Taro.useDidShow(() => {
 });
 
 onMounted(() => {
+  useEventCenter();
   getGoodList();
   getGoodCategories();
   Taro.eventCenter.trigger("login");

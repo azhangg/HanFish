@@ -3,7 +3,7 @@ import Taro from "@tarojs/taro";
 const updateManager = Taro.getUpdateManager();
 
 updateManager.onCheckForUpdate(function (res) {
-  console.log(res.hasUpdate);
+  console.log(res.hasUpdate ? "有新版本" : "已是最新版本");
 });
 
 updateManager.onUpdateReady(function () {

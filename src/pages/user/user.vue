@@ -6,6 +6,7 @@ import Taro from "@tarojs/taro";
 import { storeToRefs } from "pinia";
 import { useAccount } from "@/hooks/useAccount";
 import { goPage, msg } from "@/utils/common";
+import { stopSocketTask } from "@/utils/socket";
 import { ref } from "vue";
 
 const icons = [
@@ -115,6 +116,16 @@ const onConfirmClearClick = () => {
   msg("清理缓存成功");
 };
 
+const onLoginOutClick = () => {
+  stopSocketTask();
+  const isTabbarPage = Taro.useRouter().path.startsWith("/pages");
+  if (isTabbarPage)
+    Taro.removeTabBarBadge({
+      index: 2,
+    });
+  loginOut();
+};
+
 Taro.useDidShow(() => {
   refreshUnReadMsgNum();
 });
@@ -207,9 +218,9 @@ Taro.useDidShow(() => {
       >
         清除缓存
       </nut-button>
-      <nut-button class="box-shadow" type="primary" @click="loginOut()"
-        >退出登录</nut-button
-      >
+      <nut-button class="box-shadow" type="primary" @click="onLoginOutClick">
+        退出登录
+      </nut-button>
       <view class="flex justify-center text-#827171 text-26">
         version：
         {{ `${miniProgramInfo.envVersion} ${miniProgramInfo.version}` }}
