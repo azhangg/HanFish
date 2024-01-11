@@ -71,10 +71,15 @@ const adToExist = (address: AddressType) => {
 
 const getOrder = (id: number) => {
   getOrderByIdReq(id, (res) => {
-    const { isSuccess, data } = res.data;
+    const { isSuccess, data, message } = res.data;
     if (isSuccess) {
       order.value = data;
       current.value = order.value?.status ?? 0;
+    } else {
+      msg(message);
+      setTimeout(() => {
+        Taro.navigateBack();
+      }, 1000);
     }
   });
 };
