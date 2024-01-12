@@ -12,6 +12,7 @@ import { BASE_URL } from "@/utils/config";
 import { useEventCenter } from "@/hooks/useEvent";
 import { useStore } from "@/stores";
 import { storeToRefs } from "pinia";
+import { getBannerReq } from "@/apis/banner";
 import "@/hooks/useUpdate";
 
 const { readyChatMessages } = storeToRefs(useStore());
@@ -32,14 +33,10 @@ const pagination = reactive<{
   total: 0,
 });
 
-const imgUrls = [
-  "https://img10.360buyimg.com/babel/s700x360_jfs/t25855/203/725883724/96703/5a598a0f/5b7a22e1Nfd6ba344.jpg!q90!cc_350x180",
-  "https://img11.360buyimg.com/babel/s700x360_jfs/t1/4776/39/2280/143162/5b9642a5E83bcda10/d93064343eb12276.jpg!q90!cc_350x180",
-  "https://img14.360buyimg.com/babel/s700x360_jfs/t1/4099/12/2578/101668/5b971b4bE65ae279d/89dd1764797acfd9.jpg!q90!cc_350x180",
-];
+const imgUrls = ref([]);
 
 const swiperDuration = 500;
-const swiperInterval = 2000;
+const swiperInterval = 5000;
 
 const tabIndex = ref(0);
 
@@ -68,6 +65,15 @@ watch(
     getGoodList();
   }
 );
+
+const getBannerList = () => {
+  getBannerReq((res) => {
+    const { isSuccess, data } = res.data;
+    if (isSuccess) {
+      imgUrls.value = data.map((d) => d.imgUrl);
+    }
+  });
+};
 
 const onSearchClick = () => {
   goodList.value = [];
@@ -149,6 +155,7 @@ onMounted(() => {
   useEventCenter();
   getGoodList();
   getGoodCategories();
+  getBannerList();
   Taro.eventCenter.trigger("login");
   Taro.eventCenter.on("homeRefreshData", onHomeRefreshDataHandler);
 });
@@ -177,7 +184,7 @@ onUnmounted(() => {
       :indicatorDots="true"
     >
       <swiper-item v-for="(item, idx) in imgUrls" :key="idx">
-        <image :src="item" class="slide-image" />
+        <image :src="`${BASE_URL}/${item}`" class="slide-image" />
       </swiper-item>
     </swiper>
     <nut-tabs
