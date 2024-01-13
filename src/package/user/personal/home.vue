@@ -133,7 +133,7 @@ const getCollects = () => {
     if (isSuccess) {
       collects.value = data;
     }
-  }, userId.value);
+  }, userInfo.id);
 };
 
 const getLikes = () => {
@@ -142,7 +142,7 @@ const getLikes = () => {
     if (isSuccess) {
       likes.value = data;
     }
-  }, userId.value);
+  }, userInfo.id);
 };
 
 const onTabSwitch = (_, index) => {
