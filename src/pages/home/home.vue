@@ -147,6 +147,10 @@ Taro.usePullDownRefresh(() => {
   }, 1000);
 });
 
+Taro.useReachBottom(() => {
+  handleLoadClick();
+});
+
 Taro.useDidShow(() => {
   refreshUnReadMsgNum();
 });
