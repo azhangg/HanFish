@@ -69,12 +69,13 @@ const adToExist = (address: AddressType) => {
   };
 };
 
-const getOrder = (id: number) => {
+const getOrder = (id: number, fn?: () => void) => {
   getOrderByIdReq(id, (res) => {
     const { isSuccess, data, message } = res.data;
     if (isSuccess) {
       order.value = data;
       current.value = order.value?.status ?? 0;
+      if (fn) fn();
     } else {
       msg(message);
       setTimeout(() => {
@@ -94,11 +95,13 @@ const getUsersAddress = () => {
 };
 
 const onGoPayClick = () => {
-  goPage(
-    `/package/goods/order/pay?orderInfo=${encodeURI(
-      JSON.stringify(order.value)
-    )}`
-  );
+  getOrder(order.value?.id ?? 0, () => {
+    goPage(
+      `/package/goods/order/pay?orderInfo=${encodeURI(
+        JSON.stringify(order.value)
+      )}`
+    );
+  });
 };
 
 const onChooseAddressClose = ({ type, data }) => {
@@ -202,6 +205,10 @@ const onGoAppraiseClick = () => {
   );
 };
 
+const onGoodCardTap = (id: number) => {
+  goPage(`/package/goods/detail/detail?id=${id}`);
+};
+
 const onCancelOrderClick = () => {
   cancelOrderReq(order.value?.id ?? 0, (res) => {
     const { isSuccess } = res.data;
@@ -270,7 +277,11 @@ onBeforeMount(() => {
       </nut-step>
     </nut-steps>
     <view v-else class="pl-3 text-red font-bold"> 已取消 </view>
-    <view v-if="order" class="flex m-2 flex-gap-2 text-#827171">
+    <view
+      v-if="order"
+      class="flex m-2 flex-gap-2 text-#827171"
+      @tap="onGoodCardTap(order.goodId)"
+    >
       <image
         class="w-200 h-200 rounded-1"
         :src="`${BASE_URL}/${order?.good.imgUrls[0]}`"
@@ -308,18 +319,18 @@ onBeforeMount(() => {
       ¥ {{ order?.good.price ?? "" }} 去支付
     </nut-button>
     <nut-button
+      v-if="current <= 2 && order?.userId === userInfo.id"
+      type="warning"
+      @click="chooseAddressVisible = true"
+    >
+      修改地址
+    </nut-button>
+    <nut-button
       v-if="current === 1"
       color="linear-gradient(to right, #ff6034, #ee0a24)"
       @click="onCancelOrderClick"
     >
       取消交易
-    </nut-button>
-    <nut-button
-      v-if="current === 2 && order?.userId === userInfo.id"
-      type="warning"
-      @click="chooseAddressVisible = true"
-    >
-      修改地址
     </nut-button>
     <nut-button
       v-if="current === 2 && order?.good.userId === userInfo.id"

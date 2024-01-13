@@ -64,6 +64,8 @@ const onDeleteConfirm = () => {
     if (isSuccess) {
       msg("删除成功");
       getUsersAddress();
+    } else {
+      msg("无法删除，请确认您是否有订单使用了这个地址。");
     }
   });
 };
