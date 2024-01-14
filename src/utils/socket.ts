@@ -5,12 +5,16 @@ import { useStore } from "@/stores";
 
 let reconnect = false;
 
-const getSocketTask = (token: string) =>
-  Taro.connectSocket({
+let socketTask: Taro.SocketTask | null;
+
+const getSocketTask = (token: string) => {
+  if (socketTask) socketTask.close({ code: 1000 });
+  return Taro.connectSocket({
     url: `${SOCKET_URL}/hubs/message?id=${token}&access_token=${
       useStore().accessToken
     }`,
   });
+};
 
 setInterval(() => {
   if (reconnect) {
@@ -19,14 +23,15 @@ setInterval(() => {
 }, 5000);
 
 const TaskHandler = (socket: Taro.SocketTask) => {
-  socket.onOpen(() => {
+  socketTask = socket;
+  socketTask.onOpen(() => {
     reconnect = false;
     socket.send({
       data: `{"protocol":"json", "version":1}${String.fromCharCode(0x1e)}`,
     });
     console.log("连接成功");
   });
-  socket.onMessage((res) => {
+  socketTask.onMessage((res) => {
     let msg = res.data.split(String.fromCharCode(0x1e));
     for (let item in msg) {
       if (msg[item] != "") {
@@ -37,19 +42,19 @@ const TaskHandler = (socket: Taro.SocketTask) => {
       }
     }
   });
-  socket.onClose((res) => {
+  socketTask.onClose((res) => {
     const { code } = res;
     if (code === 1006) {
       reconnect = true;
       console.log("服务器异常关闭，正在尝试重新连接...");
-    } else if (code === 1000) {
-      console.log("连接正常关闭", res);
+    } else if (code === 3000) {
+      console.log("退出登录，连接关闭", res);
     } else {
-      reconnect = true;
+      if (socketTask) reconnect = true;
       console.log("连接关闭", res);
     }
   });
-  socket.onError((res) => {
+  socketTask.onError((res) => {
     console.log("连接错误", res);
   });
 };
@@ -62,5 +67,8 @@ export const startSocketTask = () => {
 };
 
 export const stopSocketTask = () => {
-  Taro.closeSocket();
+  socketTask?.close({
+    code: 3000,
+  });
+  socketTask = null;
 };
