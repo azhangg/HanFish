@@ -13,11 +13,14 @@ import { useEventCenter } from "@/hooks/useEvent";
 import { useStore } from "@/stores";
 import { storeToRefs } from "pinia";
 import { getBannerReq } from "@/apis/banner";
+import { useAccount } from "@/hooks/useAccount";
 import "@/hooks/useUpdate";
 
 const { readyChatMessages } = storeToRefs(useStore());
 
 const { refreshUnReadMsgNum } = useStore();
+
+const { checkLogin } = useAccount();
 
 const pagination = reactive<{
   page: number;
@@ -104,7 +107,9 @@ const onGoodCardTap = (id: number) => {
 };
 
 const onAddBtnTap = () => {
-  goPage("/package/goods/add/add");
+  if (checkLogin()) {
+    goPage("/package/goods/add/add");
+  }
 };
 
 const getGoodList = () => {

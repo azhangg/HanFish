@@ -21,6 +21,8 @@ import { useStore } from "@/stores";
 
 const { refreshUnReadMsgNum } = useStore();
 
+const { checkLogin } = useAccount();
+
 const pagination = reactive({
   page: 1,
   count: 10,
@@ -51,7 +53,7 @@ const onSearchClick = () => {
 };
 
 const onAddBtnTap = () => {
-  goPage("/package/post/add/add");
+  if (checkLogin()) goPage("/package/post/add/add");
 };
 
 const getPostList = () => {

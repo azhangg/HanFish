@@ -69,6 +69,11 @@ const onUnChooseTagClick = (name: string) => {
 
 const onAddTagConfirm = () => {
   const tagName = customTagName.value;
+  if (!tagName) {
+    msg("请输入标签名称");
+    isOpened.value = true;
+    return;
+  }
   if (!good.tags.some((t) => t === tagName)) {
     good.tags.push(tagName);
   } else msg("该标签已存在");
