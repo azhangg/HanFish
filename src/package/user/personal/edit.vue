@@ -74,7 +74,12 @@ const onSaveTap = () => {
       <AtIcon v-else value="add" size="50" color="#e0e0e0"></AtIcon>
     </button>
     <text>选择头像</text>
-    <input class="nickname" v-model="user.name" placeholder="请输入昵称" />
+    <input
+      type="nickname"
+      class="nickname"
+      v-model="user.name"
+      placeholder="请输入昵称"
+    />
     <button class="logn-btn w-540" @tap="onSaveTap">保存</button>
   </view>
 </template>

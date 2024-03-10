@@ -87,6 +87,7 @@ const onUploadSuccess = (res) => {
     fileList.value[fileList.value.length - 1].name = data[0];
   } else {
     msg(message ?? "未知错误");
+    if (fileList.value.length >= 1) fileList.value.pop();
   }
 };
 
