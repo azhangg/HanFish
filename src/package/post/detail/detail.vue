@@ -356,6 +356,7 @@ onMounted(() => {
       {{ postInfo.text }}
       <view class="flex justify-center flex-wrap">
         <image
+          class="m-2 rounded-1"
           v-for="(url, index) in postInfo.imgUrls"
           :lazy-load="true"
           :src="`${BASE_URL}/${url}`"
