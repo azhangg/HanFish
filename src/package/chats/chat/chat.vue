@@ -192,7 +192,7 @@ const orderStatus = (status: number) => {
 
 const readMsg = () => {
   const unReadMsgIds = chatMessageList.value
-    .filter((cm) => cm.receiverId === userInfo.id && !cm.isRead)
+    .filter((cm) => cm.receiverId === userInfo.id && !cm.isRead && cm.type != 3)
     .map((item) => item.id);
   if (unReadMsgIds.length > 0) {
     readMessageReq(unReadMsgIds, (res) => {
