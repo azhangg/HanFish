@@ -240,6 +240,11 @@ const orderContentParse = (content: string): OrderType => {
   return JSON.parse(content);
 };
 
+const onAvatarTap = (targetUserId?: number) => {
+  if (targetUserId)
+    goPage(`/package/user/personal/home?userId=${targetUserId}`);
+};
+
 const onChooseEmojiTap = () => {
   chooseMode.value = ChooseMode.表情;
   collapseModel.value = true;
@@ -447,6 +452,7 @@ onUnmounted(() => {
               ? userInfo.avatarUrl
               : targetInfo.avatarUrl
           }`"
+          @tap="onAvatarTap(message.senderId)"
         />
 
         <view

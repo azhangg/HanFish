@@ -59,7 +59,11 @@ const ChatMessageReadHandler = (e) => {
 
 const SendMessageHandler = (e) => {
   const { targetInfo, chatMessages } = e[0];
-  if (Taro.useRouter().path == "/package/chats/chat/chat") {
+  const readMessagePathList = [
+    "/package/chats/chat/chat",
+    "/package/user/deals/detail",
+  ];
+  if (readMessagePathList.includes(Taro.useRouter().path)) {
     //不包含在eventCenter里,是单独滴
     Taro.eventCenter.trigger("readSendChatMessage");
   }
