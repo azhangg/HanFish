@@ -201,27 +201,22 @@ export const useStore = defineStore("store", {
         }
       });
     },
-    readChatMessage(targetId: number) {
+    readChatMessage(msIds: number[]) {
       this.$patch((state) => {
-        const targetIndex = state.chatMessages.findIndex(
-          (c) => c.targetInfo.id === Number(targetId)
-        );
-
-        if (targetIndex >= 0) {
-          const unReadMsgIds = state.chatMessages[targetIndex].chatMessages
-            .filter((cm) => !cm.isRead)
-            .map((item) => item.id);
-          unReadMsgIds.forEach((id) => {
-            const msgIndex = state.chatMessages[
+        msIds.forEach((msId) => {
+          const targetIndex = state.chatMessages.findIndex((cm) =>
+            cm.chatMessages.some((cm) => cm.id === msId)
+          );
+          if (targetIndex >= 0) {
+            const msIndex = state.chatMessages[
               targetIndex
-            ].chatMessages.findIndex((m) => m.id === id);
-            if (msgIndex >= 0)
-              state.chatMessages[targetIndex].chatMessages[msgIndex].isRead =
+            ].chatMessages.findIndex((cm) => cm.id === msId);
+            if (msIndex >= 0)
+              state.chatMessages[targetIndex].chatMessages[msIndex].isRead =
                 true;
-          });
-
-          Taro.setStorageSync("chatMessages", state.chatMessages);
-        }
+          }
+        });
+        Taro.setStorageSync("chatMessages", state.chatMessages);
       });
     },
     updateTabBarBadge() {

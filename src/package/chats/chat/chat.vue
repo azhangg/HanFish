@@ -192,13 +192,13 @@ const orderStatus = (status: number) => {
 
 const readMsg = () => {
   const unReadMsgIds = chatMessageList.value
-    .filter((cm) => cm.receiverId === userInfo.id && !cm.isRead && cm.type != 3)
+    .filter((cm) => cm.receiverId === userInfo.id && !cm.isRead)
     .map((item) => item.id);
   if (unReadMsgIds.length > 0) {
     readMessageReq(unReadMsgIds, (res) => {
       const { isSuccess } = res.data;
       if (isSuccess) {
-        if (unReadMsgIds.length > 0) readChatMessage(userId);
+        readChatMessage(unReadMsgIds);
       }
     });
   }
